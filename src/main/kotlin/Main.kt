@@ -4,6 +4,7 @@ import XMLLexer
 import XMLParser
 import org.antlr.v4.runtime.CharStreams
 import org.antlr.v4.runtime.CommonTokenStream
+import java.io.File
 
 
 fun main() {
@@ -31,8 +32,10 @@ fun main() {
 
 
     val code = XQL(params = listOf("file.xml", "out.xml"), inst = listOf(
-        Load(1, "file"),
+        Load(1, "doc"),
         //Assign("test", )
+        Assign("setid", Query.Dot(Query.Variable("doc"), "uc-set")),
+        Assign("courses", Query.Dot(Query.Dot(Query.Variable("doc"), "uc-set"), "course"))
 
 
     )).run()
@@ -55,9 +58,9 @@ fun XMLParser.ElementContext.toAst(): XMLItem.Tag{
         attribs.add(XMLItem.Attribute(name = i.Name().text, value = i.STRING().text))
     }
     return if (this.content() == null){
-        XMLItem.Tag(ident = this.Name().toString(), attributes = attribs, inner = listOf())
+        XMLItem.Tag(ident = this.Name()[0].text, attributes = attribs, inner = listOf())
     }else{
-        XMLItem.Tag(ident = this.Name().toString(), attributes = attribs, inner = this.content().toAst())
+        XMLItem.Tag(ident = this.Name()[0].text, attributes = attribs, inner = this.content().toAst())
     }
 }
 
