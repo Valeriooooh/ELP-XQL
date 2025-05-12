@@ -1,15 +1,37 @@
 package org.example
 
-data class Attribute(val name: String, val value: String)
-
 interface Content;
 
-data class Text(val text: String): Content;
+interface Queryable{
+    fun find(query: String)
 
-data class Tag(val ident: String, val atributes: List<Attribute>, val inner: List<Content>):Content{
+    fun count(query: String): Int
+}
+sealed class XMLItem{
+    data class Attribute(val name: String, val value: String): XMLItem()
 
+    data class Text(val text: String): Content, XMLItem();
+
+
+    data class Tag(val ident: String, val attributes: List<Attribute>, val inner: List<Content>):Content,Queryable,XMLItem(){
+        override fun find(query: String){
+
+        }
+
+        override fun count(query: String): Int {
+            return 0
+        }
+    }
+
+
+    data class XML(val tag: List<Tag>): Queryable, XMLItem(){
+        override fun find(query: String){
+
+        }
+
+        override fun count(query: String): Int {
+            return 0
+        }
+    }
 }
 
-data class XML(val tag: List<Tag>){
-
-}

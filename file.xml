@@ -1,0 +1,16 @@
+<uc-set id="demo">
+    <course code="ELP">
+        <credits>6</credits>
+        <evaluation>
+            <item name="test" weight="40"/>
+            <item name="project" weight="60"/>
+        </evaluation>
+    </course>
+    <course code="PA">
+        <credits>6</credits>
+        <evaluation>
+            <item name="quizzes" weight="20"/>
+            <item name="project" weight="80"/>
+        </evaluation>
+    </course>
+</uc-set>
