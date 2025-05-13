@@ -8,34 +8,25 @@ import java.io.File
 
 
 fun main() {
- /*   val xml_lexer = XMLLexer(CharStreams.fromString("""
-<uc-set id="demo">
-     <course code="ELP">
-         <credits>6</credits>
-         <evaluation>
-             <item name="test" weight="40"/>
-             <item name="project" weight="60"/>
-         </evaluation>
-     </course>
-     <course code="PA">
-         <credits>6</credits>
-         <evaluation>
-             <item name="quizzes" weight="20"/>
-             <item name="project" weight="80"/>
-         </evaluation>
-    </course>
-</uc-set>
-    """.trimIndent()))
-*/
- //   val xml_parser = XMLParser(CommonTokenStream(xml_lexer))
- //   val xml_ast = xml_parser.document().toAst()
-
-
     val code = XQL(params = listOf("file.xml", "out.xml"), inst = listOf(
+        //       load $1 to doc        // carrega xml do primeiro argumento
         Load(1, "doc"),
-        //Assign("test", )
-        Assign("setid", Query.Dot(Query.Variable("doc"), "uc-set")),
-        Assign("courses", Query.Dot(Query.Dot(Query.Variable("doc"), "uc-set"), "course"))
+        //setid = doc.id        // "demo"
+        Assign("setid", Query.Dot(Query.Variable("doc"), "id")),
+        //courses = doc.course  // [<course ..>..</course>,<course ..>..</course>]
+        Assign("courses", Query.Dot(Query.Variable("doc"), "course")),
+        //elp = doc.course[0]   // <course code="elp">..</course>
+        Assign("elp", Query.Offset(Query.Dot(Query.Variable("doc"), "course"), 0)),
+        //pacredits = doc.course[1].credits // 6
+        Assign("pacredits", Query.Dot(Query.Offset(Query.Dot(Query.Variable("doc"), "course"), 1), "credits")),
+        //elpeval = doc.course[0].evaluation // [<item ..>, <item ..>]
+        Assign("pacredits", Query.Dot(Query.Offset(Query.Dot(Query.Variable("doc"), "course"), 1), "evaluation")),
+        //total = doc.course# // 2
+        Assign("total", Query.Count(Query.Dot(Query.Variable("doc"), "course"))),
+        //ids = doc.course->code // ["elp","pa"]
+        Assign("ids", Query.Arrow(Query.Dot(Query.Variable("doc"), "course"), "code")),
+        //credits = doc.course->credits++
+        Assign("credits", Query.Sum(Query.Arrow(Query.Dot(Query.Variable("doc"), "course"), "credits"))),
 
 
     )).run()
@@ -55,7 +46,7 @@ fun XMLParser.DocumentContext.toAst() : XMLItem.XML{
 fun XMLParser.ElementContext.toAst(): XMLItem.Tag{
     val attribs: MutableList<XMLItem.Attribute> = mutableListOf();
     for(i in this.attribute()){
-        attribs.add(XMLItem.Attribute(name = i.Name().text, value = i.STRING().text))
+        attribs.add(XMLItem.Attribute(name = i.Name().text, value = i.STRING().text.trim('"')))
     }
     return if (this.content() == null){
         XMLItem.Tag(ident = this.Name()[0].text, attributes = attribs, inner = listOf())
@@ -64,8 +55,8 @@ fun XMLParser.ElementContext.toAst(): XMLItem.Tag{
     }
 }
 
-fun XMLParser.ContentContext.toAst(): List<Content>{
-    val cont: MutableList<Content> = mutableListOf()
+fun XMLParser.ContentContext.toAst(): List<XMLItem>{
+    val cont: MutableList<XMLItem> = mutableListOf()
     if (this.chardata().isNotEmpty() && this.chardata() != null){
        cont.addAll(this.chardata().map { it.toAst() })
     }
@@ -76,7 +67,7 @@ fun XMLParser.ContentContext.toAst(): List<Content>{
     return cont
 }
 
-fun XMLParser.ChardataContext.toAst(): Content{
+fun XMLParser.ChardataContext.toAst(): XMLItem{
     if(this.TEXT() == null){
         return XMLItem.Text("")
     }
