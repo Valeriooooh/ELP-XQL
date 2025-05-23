@@ -5,89 +5,79 @@ import java.text.NumberFormat
 import java.util.*
 
 interface Queryable {
-    fun find(query: String): XMLItem?
+    fun find(query: String): XMLElement?
     fun count(): Int
 }
 
-sealed class XMLItem {
+sealed class XMLElement {
 
-    data class Attribute(val name: String, val value: String) : XMLItem()
+    data class Attribute(val name: String, val value: String) : XMLElement()
 
-    data class Text(val text: String) : XMLItem();
+    data class Text(val text: String) : XMLElement()
 
     data class Tag(
-        val ident: String,
+        val name: String,
         val attributes: List<Attribute>,
-        val inner: List<XMLItem>
-    ) : Queryable, XMLItem() {
-        override fun find(query: String): XMLItem? {
+        val content: List<XMLElement>
+    ) : Queryable, XMLElement() {
+        override fun find(query: String): XMLElement {
             for (i in attributes) {
                 if (i.name == query) {
                     return Text(i.value)
                 }
             }
-            val tt: MutableList<Tag> = mutableListOf()
-            for (i in inner) {
+            val tags: MutableList<Tag> = mutableListOf()
+            for (i in content) {
                 when (i) {
                     is Tag -> {
-                        if (i.ident == query) {
-                            tt.add(i)
+                        if (i.name == query) {
+                            tags.add(i)
                         }
                     }
 
                     else -> {}
-
                 }
             }
-            if (tt.size == 1) {
-                return tt[0].inner.first()
+            if (tags.size == 1) {
+                return tags[0].content.first()
             }
-            return ResultList(tt);
+            return ResultList(tags)
         }
 
-        override fun count(): Int {
-            return 0
-        }
+        override fun count(): Int = 0
     }
 
-    data class XML(val tag: List<Tag>) : Queryable, XMLItem() {
-        override fun find(query: String): XMLItem? {
+    data class XML(val tag: List<Tag>) : Queryable, XMLElement() {
+        override fun find(query: String): XMLElement? {
             for (i in tag) {
-                println(i.ident)
-                if (i.ident == query) {
+                if (i.name == query) {
                     return i
                 }
             }
             return null
         }
 
-        override fun count(): Int {
-            return 0
-        }
+        override fun count(): Int = 0
     }
 
-    data class ResultList(val items: List<XMLItem>) : Queryable, XMLItem() {
-        override fun find(query: String): XMLItem? {
-            return null
-        }
+    data class ResultList(val elements: List<XMLElement>) : Queryable, XMLElement() {
 
-        override fun count(): Int {
-            return items.size
-        }
+        override fun find(query: String): XMLElement? = null
+        override fun count(): Int = elements.size
 
-        fun get(index: Int): XMLItem? {
+        fun get(index: Int): XMLElement? {
             return try {
-                this.items[index];
+                this.elements[index]
             } catch (e: Exception) {
                 null
             }
-
         }
 
-        fun sum(): XMLItem? {
+        // TODO // Review.
+        fun sum(): XMLElement? {
             val isString: MutableList<Boolean> = mutableListOf()
             val numberFormat = NumberFormat.getNumberInstance(Locale.ENGLISH) as DecimalFormat
-            for (i in items) {
+            for (i in elements) {
                 try {
                     when (i) {
                         is Text -> {
@@ -101,18 +91,17 @@ sealed class XMLItem {
                     isString.add(true)
                 }
             }
-            val _isString = isString.distinct()
-            if (_isString.size > 1 || _isString[0] == true) {
-                var teste = ""
-                for (i in items)
+            if (isString.distinct().size > 1 || isString.distinct()[0]) {
+                val teste = ""
+                for (i in elements)
                     when (i) {
                         is Text -> teste + i.text
                         else -> teste + ""
                     }
                 return Text(teste)
             } else {
-                var sum = 0;
-                for (i in items) {
+                var sum = 0
+                for (i in elements) {
                     when (i) {
                         is Text -> sum += (numberFormat.parse(i.text)).toInt()
                         else -> {}
@@ -122,21 +111,21 @@ sealed class XMLItem {
             }
         }
 
-        fun map(query: String): XMLItem? {
-            val tt: MutableList<XMLItem> = mutableListOf()
-            for (i in items) {
+        fun map(query: String): XMLElement {
+            val results: MutableList<XMLElement> = mutableListOf()
+            for (i in elements) {
                 when (i) {
                     is Tag -> {
                         for (j in i.attributes) {
                             if (j.name == query) {
-                                tt.add(Text(j.value))
+                                results.add(Text(j.value))
                             }
                         }
-                        for (j in i.inner) {
+                        for (j in i.content) {
                             when (j) {
                                 is Tag -> {
-                                    if (j.ident == query) {
-                                        tt.add(j.inner[0])
+                                    if (j.name == query) {
+                                        results.add(j.content[0])
                                     }
                                 }
 
@@ -148,7 +137,7 @@ sealed class XMLItem {
                     else -> {}
                 }
             }
-            return ResultList(tt)
+            return ResultList(results)
         }
     }
 
