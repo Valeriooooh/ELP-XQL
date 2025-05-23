@@ -8,7 +8,7 @@ import java.io.File
 
 interface Instruction
 
-data class Load(val number: Int, val name: String) : Instruction
+data class Load(val name: String, val number: Int) : Instruction
 data class Assign(val name: String, val query: Query) : Instruction
 data class Save(val name: String, val number: Int) : Instruction
 
@@ -99,6 +99,14 @@ data class XQL(val parameters: List<String>, val instructions: List<Instruction>
                 null
             }
         }
+    }
+
+    override fun toString(): String {
+        val builder = StringBuilder()
+        for (i in dict.keys) {
+            builder.append(i + ": " + dict[i] + "\n")
+        }
+        return builder.toString()
     }
 
 }

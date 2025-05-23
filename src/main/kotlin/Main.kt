@@ -3,10 +3,10 @@ package org.example
 import XMLParser
 
 fun main() {
-    XQL(
+    val code = XQL(
         parameters = listOf("uc.xml", "out.xml"), instructions = listOf(
             //       load $1 to doc        // carrega xml do primeiro argumento
-            Load(1, "doc"),
+            Load("doc", 1),
             //setid = doc.id        // "demo"
             Assign("setid", Query.Dot(Query.Variable("doc"), "id")),
             //courses = doc.course  // [<course ..>..</course>,<course ..>..</course>]
@@ -24,7 +24,9 @@ fun main() {
             //credits = doc.course->credits++
             Assign("credits", Query.Sum(Query.Arrow(Query.Dot(Query.Variable("doc"), "course"), "credits"))),
         )
-    ).run()
+    )
+    code.run()
+    println(code)
 }
 
 fun XMLParser.DocumentContext.toAst(): XMLElement.XML {
