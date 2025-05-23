@@ -4,7 +4,7 @@ import XMLParser
 
 fun main() {
     XQL(
-        parameters = listOf("file.xml", "out.xml"), instructions = listOf(
+        parameters = listOf("uc.xml", "out.xml"), instructions = listOf(
             //       load $1 to doc        // carrega xml do primeiro argumento
             Load(1, "doc"),
             //setid = doc.id        // "demo"
