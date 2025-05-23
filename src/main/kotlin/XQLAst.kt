@@ -41,6 +41,8 @@ data class XQL(val parameters: List<String>, val instructions: List<Instruction>
 
                 is Assign -> dict[i.name] = exec(i.query)
 
+                is Save -> File(parameters[i.number - 1]).writeText(dict[i.name].toString())
+
                 else -> {}
             }
         }

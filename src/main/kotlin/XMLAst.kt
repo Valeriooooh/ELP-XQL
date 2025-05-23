@@ -11,9 +11,13 @@ interface Queryable {
 
 sealed class XMLElement {
 
-    data class Attribute(val name: String, val value: String) : XMLElement()
+    data class Attribute(val name: String, val value: String) : XMLElement() {
+        override fun toString(): String = name + "=\"" + value + "\""
+    }
 
-    data class Text(val text: String) : XMLElement()
+    data class Text(val text: String) : XMLElement() {
+        override fun toString(): String = text
+    }
 
     data class Tag(
         val name: String,
@@ -45,6 +49,24 @@ sealed class XMLElement {
         }
 
         override fun count(): Int = 0
+
+        override fun toString(): String {
+            val builder = StringBuilder()
+            builder.append("<" + name)
+            for (i in attributes) {
+                builder.append(" " + i)
+            }
+            if (content.isEmpty()) {
+                builder.append(" />")
+                return builder.toString()
+            }
+            builder.append(">")
+            for (i in content) {
+                builder.append(i)
+            }
+            builder.append("</" + name + ">")
+            return builder.toString()
+        }
     }
 
     data class XML(val tag: List<Tag>) : Queryable, XMLElement() {
