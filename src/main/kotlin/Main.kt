@@ -23,8 +23,16 @@ fun main() {
             Assign("ids", Query.Arrow(Query.Dot(Query.Variable("doc"), "course"), "code")),
             // credits = doc.course->credits++
             Assign("credits", Query.Sum(Query.Arrow(Query.Dot(Query.Variable("doc"), "course"), "credits"))),
-            // save doc to $2 // Example, while there is not a template.
-            Save("doc", 2)
+            // XML template
+            Assign(
+                "xml", Query.Template(
+                    "<summary count=\"\$total\" credits=\"\$credits\">\n" +
+                            "<uc\$courses name=\"\$code\"/>\n" +
+                            "</summary>"
+                )
+            ),
+            // save xml to $2
+            Save("xml", 2)
         )
     )
     code.run()

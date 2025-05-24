@@ -11,8 +11,8 @@ interface Queryable {
 
 sealed class XMLElement {
 
-    data class Attribute(val name: String, val value: String) : XMLElement() {
-        override fun toString(): String = name + "=\"" + value + "\""
+    data class Attribute(val name: String, var value: String) : XMLElement() {
+        override fun toString(): String = "$name=\"$value\""
     }
 
     data class Text(val text: String) : XMLElement() {
@@ -69,9 +69,9 @@ sealed class XMLElement {
         }
     }
 
-    data class XML(val tag: List<Tag>) : Queryable, XMLElement() {
+    data class XML(val tags: List<Tag>) : Queryable, XMLElement() {
         override fun find(query: String): XMLElement? {
-            for (i in tag) {
+            for (i in tags) {
                 if (i.name == query) {
                     return i
                 }
@@ -80,6 +80,14 @@ sealed class XMLElement {
         }
 
         override fun count(): Int = 0
+
+        override fun toString(): String {
+            val builder = StringBuilder()
+            for (i in tags) {
+                builder.append(i)
+            }
+            return builder.toString()
+        }
     }
 
     data class ResultList(val elements: List<XMLElement>) : Queryable, XMLElement() {

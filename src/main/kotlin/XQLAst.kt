@@ -36,7 +36,7 @@ data class XQL(val parameters: List<String>, val instructions: List<Instruction>
                                 CharStreams.fromString(File(parameters[i.number - 1]).readText().trimIndent())
                             )
                         )
-                    ).document().toAst().tag.first()
+                    ).document().toAst().tags.first()
                 }
 
                 is Assign -> dict[i.name] = exec(i.query)
@@ -97,10 +97,27 @@ data class XQL(val parameters: List<String>, val instructions: List<Instruction>
                 }
             }
 
-            is Query.Template -> {
-                null
+            is Query.Template -> filledXML(query)
+        }
+    }
+
+    // TODO // Incomplete.
+    private fun filledXML(query: Query.Template): XMLElement {
+        val tags = XMLParser(
+            CommonTokenStream(
+                XMLLexer(
+                    CharStreams.fromString(query.xml.trimIndent())
+                )
+            )
+        ).document().toAst().tags
+        tags.forEach { tag ->
+            tag.attributes.forEach { attribute ->
+                if (Regex("\\$\\w*").matches(attribute.value)) {
+                    attribute.value = dict[attribute.value.removePrefix("$")].toString()
+                }
             }
         }
+        return XMLElement.XML(tags)
     }
 
     override fun toString(): String {
