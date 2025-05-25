@@ -52,9 +52,9 @@ sealed class XMLElement {
 
         override fun toString(): String {
             val builder = StringBuilder()
-            builder.append("<" + name)
+            builder.append("<$name")
             for (i in attributes) {
-                builder.append(" " + i)
+                builder.append(" $i")
             }
             if (content.isEmpty()) {
                 builder.append(" />")
@@ -64,12 +64,12 @@ sealed class XMLElement {
             for (i in content) {
                 builder.append(i)
             }
-            builder.append("</" + name + ">")
+            builder.append("</$name>")
             return builder.toString()
         }
     }
 
-    data class XML(val tags: List<Tag>) : Queryable, XMLElement() {
+    data class Document(val tags: List<Tag>) : Queryable, XMLElement() {
         override fun find(query: String): XMLElement? {
             for (i in tags) {
                 if (i.name == query) {

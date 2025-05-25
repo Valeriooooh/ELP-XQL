@@ -39,11 +39,11 @@ fun main() {
     println(code)
 }
 
-fun XMLParser.DocumentContext.toAst(): XMLElement.XML {
+fun XMLParser.DocumentContext.toAst(): XMLElement.Document {
     if (this.element() != null) {
-        return XMLElement.XML(listOf(this.element().toAst()))
+        return XMLElement.Document(listOf(this.element().toAst()))
     }
-    return XMLElement.XML(listOf())
+    return XMLElement.Document(listOf())
 }
 
 fun XMLParser.ElementContext.toAst(): XMLElement.Tag {
