@@ -67,7 +67,7 @@ data class XQL(val parameters: List<String>, val instructions: List<Instruction>
             is Query.Dot -> {
                 when (val p = exec(query.prev)) {
                     is XMLElement.Tag -> p.find(query.query)
-                    is XMLElement.XML -> p.find(query.query)
+                    is XMLElement.Document -> p.find(query.query)
                     else -> null
                 }
             }
@@ -97,33 +97,41 @@ data class XQL(val parameters: List<String>, val instructions: List<Instruction>
                 }
             }
 
-            is Query.Template -> filledXML(query)
+            is Query.Template -> fillXML(query)
         }
     }
 
     // TODO // Incomplete.
-    private fun filledXML(query: Query.Template): XMLElement {
-        val tags = XMLParser(
+    private fun fillXML(query: Query.Template): XMLElement {
+        fun iterate(elements: List<XMLElement>) {
+            elements.forEach { element ->
+                if (element is XMLElement.Tag) {
+                    element.attributes.forEach { attribute ->
+                        if (Regex("\\$\\w*").matches(attribute.value)) {
+                            attribute.value = dict[attribute.value.removePrefix("$")].toString()
+                        }
+                    }
+                    iterate(element.content)
+                }
+            }
+        }
+
+        val parents = XMLParser(
             CommonTokenStream(
                 XMLLexer(
                     CharStreams.fromString(query.xml.trimIndent())
                 )
             )
         ).document().toAst().tags
-        tags.forEach { tag ->
-            tag.attributes.forEach { attribute ->
-                if (Regex("\\$\\w*").matches(attribute.value)) {
-                    attribute.value = dict[attribute.value.removePrefix("$")].toString()
-                }
-            }
-        }
-        return XMLElement.XML(tags)
+
+        iterate(parents)
+        return XMLElement.Document(parents)
     }
 
     override fun toString(): String {
         val builder = StringBuilder()
         for (i in dict.keys) {
-            builder.append(i + ": " + dict[i] + "\n")
+            builder.append("$i: " + dict[i] + "\n")
         }
         return builder.toString()
     }
