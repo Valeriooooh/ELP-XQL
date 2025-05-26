@@ -85,7 +85,7 @@ data class XQL(val parameters: List<String>, val instructions: List<Instruction>
                 when (val p = exec(query.prev)) {
                     is XMLElement.ResultList -> try {
                         p.elements[query.num]
-                    } catch (e: Exception) {
+                    } catch (_: Exception) {
                         null
                     }
 

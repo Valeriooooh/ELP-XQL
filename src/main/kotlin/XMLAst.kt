@@ -98,7 +98,7 @@ sealed class XMLElement {
         fun get(index: Int): XMLElement? {
             return try {
                 this.elements[index]
-            } catch (e: Exception) {
+            } catch (_: Exception) {
                 null
             }
         }
@@ -117,7 +117,7 @@ sealed class XMLElement {
 
                         else -> return null
                     }
-                } catch (e: Exception) {
+                } catch (_: Exception) {
                     isString.add(true)
                 }
             }
