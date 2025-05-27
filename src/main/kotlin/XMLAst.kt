@@ -22,7 +22,7 @@ sealed class XMLElement {
     data class Tag(
         val name: String,
         val attributes: List<Attribute>,
-        val content: List<XMLElement>
+        var content: List<XMLElement>
     ) : Queryable, XMLElement() {
         override fun find(query: String): XMLElement {
             for (i in attributes) {
