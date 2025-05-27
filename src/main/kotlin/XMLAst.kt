@@ -69,12 +69,10 @@ sealed class XMLElement {
         }
     }
 
-    data class Document(val tags: List<Tag>) : Queryable, XMLElement() {
+    data class Document(val root: Tag) : Queryable, XMLElement() {
         override fun find(query: String): XMLElement? {
-            for (i in tags) {
-                if (i.name == query) {
-                    return i
-                }
+            if (root.name == query) {
+                return root
             }
             return null
         }
@@ -82,11 +80,7 @@ sealed class XMLElement {
         override fun count(): Int = 0
 
         override fun toString(): String {
-            val builder = StringBuilder()
-            for (i in tags) {
-                builder.append(i)
-            }
-            return builder.toString()
+            return root.toString()
         }
     }
 

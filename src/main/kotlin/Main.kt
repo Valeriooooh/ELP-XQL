@@ -40,10 +40,7 @@ fun main() {
 }
 
 fun XMLParser.DocumentContext.toAst(): XMLElement.Document {
-    if (this.element() != null) {
-        return XMLElement.Document(listOf(this.element().toAst()))
-    }
-    return XMLElement.Document(listOf())
+    return XMLElement.Document(this.element().toAst())
 }
 
 fun XMLParser.ElementContext.toAst(): XMLElement.Tag {

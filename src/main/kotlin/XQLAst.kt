@@ -36,7 +36,7 @@ data class XQL(val parameters: List<String>, val instructions: List<Instruction>
                                 CharStreams.fromString(File(parameters[i.number - 1]).readText().trimIndent())
                             )
                         )
-                    ).document().toAst().tags.first()
+                    ).document().toAst().root
                 }
 
                 is Assign -> dict[i.name] = exec(i.query)
@@ -103,29 +103,29 @@ data class XQL(val parameters: List<String>, val instructions: List<Instruction>
 
     // TODO // Incomplete.
     private fun fillXML(query: Query.Template): XMLElement {
-        fun iterate(elements: List<XMLElement>) {
-            elements.forEach { element ->
-                if (element is XMLElement.Tag) {
-                    element.attributes.forEach { attribute ->
-                        if (Regex("\\$\\w*").matches(attribute.value)) {
-                            attribute.value = dict[attribute.value.removePrefix("$")].toString()
-                        }
-                    }
-                    iterate(element.content)
+        fun iterate(parent: XMLElement.Tag) {
+            parent.attributes.forEach { attribute ->
+                if (Regex("\\$\\w*").matches(attribute.value)) {
+                    attribute.value = dict[attribute.value.removePrefix("$")].toString()
+                }
+            }
+            parent.content.forEach { child ->
+                if (child is XMLElement.Tag) {
+                    iterate(child)
                 }
             }
         }
 
-        val parents = XMLParser(
+        val root = XMLParser(
             CommonTokenStream(
                 XMLLexer(
                     CharStreams.fromString(query.xml.trimIndent())
                 )
             )
-        ).document().toAst().tags
+        ).document().toAst().root
 
-        iterate(parents)
-        return XMLElement.Document(parents)
+        iterate(root)
+        return XMLElement.Document(root)
     }
 
     override fun toString(): String {
