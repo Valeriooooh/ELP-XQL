@@ -97,13 +97,49 @@ data class XQL(val parameters: List<String>, val instructions: List<Instruction>
                 }
             }
 
-            is Query.Template -> fillXML(query)
+            is Query.Template -> refactor(query)
         }
     }
 
-    // TODO // Incomplete.
-    private fun fillXML(query: Query.Template): XMLElement {
-        fun iterate(parent: XMLElement.Tag) {
+    private fun refactor(query: Query.Template): XMLElement {
+
+        fun eval(parent: XMLElement.Tag): XMLElement.Tag {
+
+            fun expand(element: XMLElement.Tag, content: List<XMLElement>): List<XMLElement> {
+                val content = content.toMutableList()
+                var index = content.indexOf(element)
+                content.removeAt(index)
+                val branches = dict[element.name.split("$")[1]]
+                if (branches is XMLElement.ResultList) {
+                    branches.elements.forEach { branch ->
+                        if (branch is XMLElement.Tag) {
+                            val attributes = mutableListOf<XMLElement.Attribute>()
+                            element.attributes.forEach { attribute ->
+                                if (Regex("\\$\\w+").matches(attribute.value)) {
+                                    val search = branch.find(attribute.value.removePrefix("$"))
+                                    if (search is XMLElement.Text) {
+                                        attributes.add(XMLElement.Attribute(attribute.name, search.toString()))
+                                    } else {
+                                        attributes.add(attribute)
+                                    }
+                                } else {
+                                    attributes.add(attribute)
+                                }
+                            }
+                            content.add(
+                                index++,
+                                XMLElement.Tag(
+                                    element.name.split("$")[0],
+                                    attributes,
+                                    element.content
+                                )
+                            )
+                        }
+                    }
+                }
+                return content
+            }
+
             parent.attributes.forEach { attribute ->
                 if (Regex("\\$\\w*").matches(attribute.value)) {
                     attribute.value = dict[attribute.value.removePrefix("$")].toString()
@@ -111,21 +147,26 @@ data class XQL(val parameters: List<String>, val instructions: List<Instruction>
             }
             parent.content.forEach { child ->
                 if (child is XMLElement.Tag) {
-                    iterate(child)
+                    if (Regex("\\w+\\$\\w+").matches(child.name)) {
+                        parent.content = expand(child, parent.content)
+                    }
+                    eval(child)
                 }
             }
+            return parent
         }
 
-        val root = XMLParser(
-            CommonTokenStream(
-                XMLLexer(
-                    CharStreams.fromString(query.xml.trimIndent())
-                )
+        return XMLElement.Document(
+            eval(
+                XMLParser(
+                    CommonTokenStream(
+                        XMLLexer(
+                            CharStreams.fromString(query.xml.trimIndent())
+                        )
+                    )
+                ).document().toAst().root
             )
-        ).document().toAst().root
-
-        iterate(root)
-        return XMLElement.Document(root)
+        )
     }
 
     override fun toString(): String {
