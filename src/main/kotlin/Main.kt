@@ -1,7 +1,5 @@
 package org.example
 
-import XMLParser
-
 fun main() {
     val code = XQL(
         parameters = listOf("uc.xml", "out.xml"), instructions = listOf(
@@ -37,39 +35,4 @@ fun main() {
     )
     code.run()
     println(code)
-}
-
-fun XMLParser.DocumentContext.toAst(): XMLElement.Document {
-    return XMLElement.Document(this.element().toAst())
-}
-
-fun XMLParser.ElementContext.toAst(): XMLElement.Tag {
-    val attributes: MutableList<XMLElement.Attribute> = mutableListOf()
-    for (i in this.attribute()) {
-        attributes.add(XMLElement.Attribute(name = i.Name().text, value = i.STRING().text.trim('"')))
-    }
-    return if (this.content() == null) {
-        XMLElement.Tag(name = this.Name()[0].text, attributes = attributes, content = listOf())
-    } else {
-        XMLElement.Tag(name = this.Name()[0].text, attributes = attributes, content = this.content().toAst())
-    }
-}
-
-fun XMLParser.ContentContext.toAst(): List<XMLElement> {
-    val content: MutableList<XMLElement> = mutableListOf()
-    if (this.chardata().isNotEmpty() && this.chardata() != null) {
-        content.addAll(this.chardata().map { it.toAst() })
-    }
-    if (this.element().isNotEmpty() && this.element() != null) {
-        content.addAll(this.element().map { it.toAst() })
-    }
-    content.removeAll { it == XMLElement.Text("") }
-    return content
-}
-
-fun XMLParser.ChardataContext.toAst(): XMLElement {
-    if (this.TEXT() == null) {
-        return XMLElement.Text("")
-    }
-    return XMLElement.Text(this.TEXT().toString())
 }
