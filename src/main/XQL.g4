@@ -4,9 +4,9 @@ document: (instruction SPACE? COMMENT? NEWLINE+)* instruction SPACE? COMMENT? EO
 
 instruction: load | assign | save;
 
-load: LOAD SPACE argument SPACE TO SPACE variable;
+load: LOAD SPACE ARGUMENT SPACE TO SPACE variable;
 assign: variable SPACE EQUALS SPACE expression;
-save: SAVE SPACE variable SPACE TO SPACE argument;
+save: SAVE SPACE variable SPACE TO SPACE ARGUMENT;
 
 expression: variable composition? | TEMPLATE;
 composition:
@@ -17,7 +17,6 @@ composition:
     | SUM
 ;
 
-argument: ARGUMENT;
 variable: NAME;
 attribute: NAME;
 
