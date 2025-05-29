@@ -16,12 +16,6 @@ public interface XQLVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitDocument(XQLParser.DocumentContext ctx);
 	/**
-	 * Visit a parse tree produced by {@link XQLParser#comment}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitComment(XQLParser.CommentContext ctx);
-	/**
 	 * Visit a parse tree produced by {@link XQLParser#instruction}.
 	 * @param ctx the parse tree
 	 * @return the visitor result

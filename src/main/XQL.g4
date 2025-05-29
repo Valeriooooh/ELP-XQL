@@ -1,8 +1,6 @@
 grammar XQL;
 
-document: (instruction SPACE? comment? NEWLINE)* instruction SPACE? comment? EOF;
-
-comment: COMMENT TEXT;
+document: (instruction SPACE? COMMENT? NEWLINE+)* instruction SPACE? COMMENT? EOF;
 
 instruction: load | assign | save;
 
@@ -13,7 +11,7 @@ save: SAVE SPACE variable SPACE TO SPACE argument;
 expression: variable composition? | TEMPLATE;
 composition:
     DOT variable composition?
-    | ARROW attribute
+    | ARROW attribute SUM?
     | COUNT
     | OFFSET composition?
     | SUM
@@ -28,10 +26,10 @@ TO: 'to';
 SAVE: 'save';
 EQUALS: '=';
 
+COMMENT: '/*' .*? '*/';
+
 SPACE: (' ' | '\t')+;
 NEWLINE: '\n';
-COMMENT: '//';
-TEXT: ~[\n]+;
 
 ARGUMENT: '$' [1-9];
 NAME: [a-z] [a-zA-Z]*;

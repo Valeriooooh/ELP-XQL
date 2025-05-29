@@ -17,16 +17,6 @@ public interface XQLListener extends ParseTreeListener {
 	 */
 	void exitDocument(XQLParser.DocumentContext ctx);
 	/**
-	 * Enter a parse tree produced by {@link XQLParser#comment}.
-	 * @param ctx the parse tree
-	 */
-	void enterComment(XQLParser.CommentContext ctx);
-	/**
-	 * Exit a parse tree produced by {@link XQLParser#comment}.
-	 * @param ctx the parse tree
-	 */
-	void exitComment(XQLParser.CommentContext ctx);
-	/**
 	 * Enter a parse tree produced by {@link XQLParser#instruction}.
 	 * @param ctx the parse tree
 	 */
