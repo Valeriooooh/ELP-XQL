@@ -22,7 +22,7 @@ sealed class Query {
     data class Template(val xml: String) : Query()
 }
 
-data class XQL(val parameters: List<String>, val instructions: List<Instruction>) {
+data class XQL(val parameters: List<String>, val instructions: List<Instruction?>) {
 
     private val dict: MutableMap<String, XMLElement?> = mutableMapOf()
 
@@ -42,8 +42,6 @@ data class XQL(val parameters: List<String>, val instructions: List<Instruction>
                 is Assign -> dict[i.name] = exec(i.query)
 
                 is Save -> File(parameters[i.number - 1]).writeText(dict[i.name].toString())
-
-                else -> {}
             }
         }
     }
@@ -177,4 +175,36 @@ data class XQL(val parameters: List<String>, val instructions: List<Instruction>
         return builder.toString()
     }
 
+}
+
+fun XQLParser.DocumentContext.toAst(parameters: List<String>): XQL {
+    val instructions = mutableListOf<Instruction?>()
+    this.instruction().forEach { instructions.add(it.toAst()) }
+    return XQL(parameters, instructions)
+}
+
+fun XQLParser.InstructionContext.toAst(): Instruction? {
+    return if (this.load() != null) {
+        Load(
+            this.load().variable().NAME().toString(),
+            this.load().ARGUMENT().toString().removePrefix("$").toInt()
+        )
+    } else if (this.save() != null) {
+        Save(
+            this.save().variable().NAME().toString(),
+            this.save().ARGUMENT().toString().removePrefix("$").toInt()
+        )
+    } else if (this.assign() != null) {
+        Assign(
+            this.assign().variable().NAME().toString(),
+            this.assign().expression().toAst()
+        )
+    } else {
+        null
+    }
+}
+
+// TODO
+fun XQLParser.ExpressionContext.toAst(): Query {
+    return Query.Variable("")
 }
