@@ -219,7 +219,6 @@ fun XQLParser.ExpressionContext.toAst(): Query {
     }
 }
 
-// TODO // Debug.
 fun XQLParser.CompositionContext.toAst(branch: Query): Query {
     return when {
         this.DOT() != null ->
@@ -236,9 +235,9 @@ fun XQLParser.CompositionContext.toAst(branch: Query): Query {
 
         this.ARROW() != null ->
             if (this.SUM() != null) {
-                Query.Sum(Query.Arrow(branch, this.attribute().toString()))
+                Query.Sum(Query.Arrow(branch, this.attribute().NAME().toString()))
             } else {
-                Query.Arrow(branch, this.attribute().toString())
+                Query.Arrow(branch, this.attribute().NAME().toString())
             }
 
         this.COUNT() != null -> Query.Count(branch)
