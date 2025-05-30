@@ -43,7 +43,13 @@ sealed class XMLElement {
                 }
             }
             if (tags.size == 1) {
-                return tags[0].content.first()
+                if (tags[0].attributes.isEmpty()) {
+                    if (tags[0].content.size == 1) {
+                        return tags[0].content.first()
+                    }
+                    return ResultList(tags[0].content)
+                }
+                return tags[0]
             }
             return ResultList(tags)
         }
