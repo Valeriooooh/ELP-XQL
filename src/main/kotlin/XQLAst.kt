@@ -184,27 +184,82 @@ fun XQLParser.DocumentContext.toAst(parameters: List<String>): XQL {
 }
 
 fun XQLParser.InstructionContext.toAst(): Instruction? {
-    return if (this.load() != null) {
-        Load(
-            this.load().variable().NAME().toString(),
-            this.load().ARGUMENT().toString().removePrefix("$").toInt()
-        )
-    } else if (this.save() != null) {
-        Save(
-            this.save().variable().NAME().toString(),
-            this.save().ARGUMENT().toString().removePrefix("$").toInt()
-        )
-    } else if (this.assign() != null) {
-        Assign(
-            this.assign().variable().NAME().toString(),
-            this.assign().expression().toAst()
-        )
-    } else {
-        null
+    return when {
+        this.load() != null ->
+            Load(
+                this.load().variable().NAME().toString(),
+                this.load().ARGUMENT().toString().removePrefix("$").toInt()
+            )
+
+        this.save() != null ->
+            Save(
+                this.save().variable().NAME().toString(),
+                this.save().ARGUMENT().toString().removePrefix("$").toInt()
+            )
+
+        this.assign() != null ->
+            Assign(
+                this.assign().variable().NAME().toString(),
+                this.assign().expression().toAst()
+            )
+
+        else -> throw IllegalStateException("Invalid type of instruction.")
     }
 }
 
-// TODO
 fun XQLParser.ExpressionContext.toAst(): Query {
-    return Query.Variable("")
+    return when {
+        this.TEMPLATE() != null ->
+            Query.Template(this.TEMPLATE().toString().removeSurrounding("***"))
+
+        this.composition() != null ->
+            this.composition().toAst(Query.Variable(this.variable().NAME().toString()))
+
+        else -> Query.Variable(this.variable().NAME().toString())
+    }
+}
+
+// TODO // Debug.
+fun XQLParser.CompositionContext.toAst(branch: Query): Query {
+    return when {
+        this.DOT() != null ->
+            if (this.composition() != null) {
+                this.composition().toAst(
+                    Query.Dot(
+                        branch,
+                        this.variable().NAME().toString()
+                    )
+                )
+            } else {
+                Query.Dot(branch, this.variable().NAME().toString())
+            }
+
+        this.ARROW() != null ->
+            if (this.SUM() != null) {
+                Query.Sum(Query.Arrow(branch, this.attribute().toString()))
+            } else {
+                Query.Arrow(branch, this.attribute().toString())
+            }
+
+        this.COUNT() != null -> Query.Count(branch)
+
+        this.OFFSET() != null ->
+            if (this.composition() != null) {
+                this.composition().toAst(
+                    Query.Offset(
+                        branch,
+                        this.OFFSET().toString().removeSurrounding("[", "]").toInt()
+                    )
+                )
+            } else {
+                Query.Offset(
+                    branch,
+                    this.OFFSET().toString().removeSurrounding("[", "]").toInt()
+                )
+            }
+
+        this.SUM() != null -> Query.Sum(branch)
+
+        else -> throw IllegalArgumentException("Invalid type of query.")
+    }
 }
