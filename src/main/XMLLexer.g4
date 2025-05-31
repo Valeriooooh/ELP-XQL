@@ -1,7 +1,7 @@
 lexer grammar XMLLexer;
 
-COMMENT : '<!--' .*? '-->';
-CDATA   : '<![CDATA[' .*? ']]>';
+COMMENT   : '<!--' .*? '-->';
+CDATA     : '<![CDATA[' .*? ']]>';
 DTD       : '<!' .*? '>' -> skip;
 EntityRef : '&' Name ';';
 CharRef   : '&#' DIGIT+ ';' | '&#x' HEXDIGIT+ ';';
@@ -38,9 +38,7 @@ fragment NameChar:
     | '$'
 ;
 
-fragment NameStartChar:
-    [_:a-zA-Z]
-;
+fragment NameStartChar: [_:a-zA-Z];
 
 mode PROC_INSTR;
 
