@@ -1,8 +1,8 @@
 grammar XQL;
 
-document: (instruction SPACE? COMMENT? NEWLINE+)* instruction SPACE? COMMENT? EOF;
+document:  (instruction SPACE? COMMENT? NEWLINE+)* instruction SPACE? COMMENT? EOF;
 
-instruction: load | assign | save;
+instruction: (SPACE|NEWLINE)* (load | assign | save) ;
 
 load: LOAD SPACE ARGUMENT SPACE TO SPACE variable;
 assign: variable SPACE EQUALS SPACE expression;
@@ -25,7 +25,8 @@ TO: 'to';
 SAVE: 'save';
 EQUALS: '=';
 
-COMMENT: '/*' .*? '*/';
+COMMENT: (('/*' .*? '*/')
+        | ('//' .*? '\n') ) -> skip;
 
 SPACE: (' ' | '\t')+;
 NEWLINE: '\n';

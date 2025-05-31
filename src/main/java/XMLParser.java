@@ -1,4 +1,4 @@
-// Generated from /home/datom/IdeaProjects/ProjXML/src/main/XMLParser.g4 by ANTLR 4.13.2
+// Generated from /home/datom/Projects/UNI/ELP/ELP-XQL/src/main/XMLParser.g4 by ANTLR 4.13.2
 import org.antlr.v4.runtime.atn.*;
 import org.antlr.v4.runtime.dfa.DFA;
 import org.antlr.v4.runtime.*;

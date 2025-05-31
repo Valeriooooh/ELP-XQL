@@ -1,11 +1,7 @@
 lexer grammar XMLLexer;
 
-// Default "mode": Everything OUTSIDE of a tag
 COMMENT : '<!--' .*? '-->';
 CDATA   : '<![CDATA[' .*? ']]>';
-/** Scarf all DTD stuff, Entity Declarations like <!ENTITY ...>,
- *  and Notation Declarations <!NOTATION ...>
- */
 DTD       : '<!' .*? '>' -> skip;
 EntityRef : '&' Name ';';
 CharRef   : '&#' DIGIT+ ';' | '&#x' HEXDIGIT+ ';';
@@ -15,13 +11,12 @@ OPEN         : '<'       -> pushMode(INSIDE);
 XMLDeclOpen  : '<?xml' S -> pushMode(INSIDE);
 SPECIAL_OPEN : '<?' Name -> more, pushMode(PROC_INSTR);
 
-TEXT: ~[<&]+; // match any 16 bit char other than < and &
+TEXT: ~[<&]+;
 
-// ----------------- Everything INSIDE of a tag ---------------------
 mode INSIDE;
 
 CLOSE         : '>'  -> popMode;
-SPECIAL_CLOSE : '?>' -> popMode; // close <?xml...?>
+SPECIAL_CLOSE : '?>' -> popMode;
 SLASH_CLOSE   : '/>' -> popMode;
 SLASH         : '/';
 EQUALS        : '=';
@@ -41,22 +36,13 @@ fragment NameChar:
     | '.'
     | DIGIT
     | '$'
-    | '\u00B7'
-    | '\u0300' ..'\u036F'
-    | '\u203F' ..'\u2040'
 ;
 
 fragment NameStartChar:
     [_:a-zA-Z]
-    | '\u2070' ..'\u218F'
-    | '\u2C00' ..'\u2FEF'
-    | '\u3001' ..'\uD7FF'
-    | '\uF900' ..'\uFDCF'
-    | '\uFDF0' ..'\uFFFD'
 ;
 
-// ----------------- Handle <? ... ?> ---------------------
 mode PROC_INSTR;
 
-PI     : '?>' -> popMode; // close <?...?>
+PI     : '?>' -> popMode;
 IGNORE : .    -> more;

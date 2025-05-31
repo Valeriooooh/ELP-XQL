@@ -29,11 +29,8 @@ reference
 
 attribute
     : Name '=' STRING
-    ; // Our STRING is AttValue in spec
+    ;
 
-/** ``All text that is not markup constitutes the character data of
- *  the document.''
- */
 chardata
     : TEXT
     | SEA_WS
