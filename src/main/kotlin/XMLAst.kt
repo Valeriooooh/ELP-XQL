@@ -1,9 +1,5 @@
 package org.example
 
-import java.text.DecimalFormat
-import java.text.NumberFormat
-import java.util.*
-
 interface Queryable {
     fun find(query: String): XMLElement?
     fun count(): Int
@@ -103,42 +99,18 @@ sealed class XMLElement {
             }
         }
 
-        // TODO // Review.
         fun sum(): XMLElement? {
-            val isString: MutableList<Boolean> = mutableListOf()
-            val numberFormat = NumberFormat.getNumberInstance(Locale.ENGLISH) as DecimalFormat
+            var sum = 0
             for (i in elements) {
-                try {
-                    when (i) {
-                        is Text -> {
-                            numberFormat.parse(i.text)
-                            isString.add(false)
-                        }
-
-                        else -> return null
-                    }
-                } catch (_: Exception) {
-                    isString.add(true)
-                }
-            }
-            if (isString.distinct().size > 1 || isString.distinct()[0]) {
-                val teste = ""
-                for (i in elements)
-                    when (i) {
-                        is Text -> teste + i.text
-                        else -> teste + ""
-                    }
-                return Text(teste)
-            } else {
-                var sum = 0
-                for (i in elements) {
-                    when (i) {
-                        is Text -> sum += (numberFormat.parse(i.text)).toInt()
-                        else -> {}
+                if (i is Text) {
+                    try {
+                        sum += i.text.toInt()
+                    } catch (_: NumberFormatException) {
+                        throw IllegalArgumentException("Invalid sum operation: \"" + i.text + "\" is not a valid integer.")
                     }
                 }
-                return Text("" + sum)
             }
+            return Text("" + sum)
         }
 
         fun map(query: String): XMLElement {
