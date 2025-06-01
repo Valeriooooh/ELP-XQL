@@ -32,10 +32,10 @@ class XQLErrors {
             colorPrint(CYAN, "$line:")
             colorPrintln(RESET, "\t${region.trimStart()}")
             colorPrintln(
-                RED, "\t" + " "
-                    .repeat(region.findAnyOf(listOf(name))?.first.toString().toInt())
-                        + "^"
-                    .repeat(name.length)
+                RED,
+                "\t"
+                        + " ".repeat(region.findAnyOf(listOf(name))?.first.toString().toInt())
+                        + "^".repeat(name.length)
             )
             exitProcess(1)
         }
@@ -49,10 +49,10 @@ class XQLErrors {
             colorPrint(CYAN, "$line:")
             colorPrintln(RESET, "\t$region")
             colorPrintln(
-                RED, "\t" + " "
-                    .repeat(region.findAnyOf(listOf(name))?.first.toString().toInt())
-                        + "^"
-                    .repeat(name.length)
+                RED,
+                "\t"
+                        + " ".repeat(region.findAnyOf(listOf(name))?.first.toString().toInt())
+                        + "^".repeat(name.length)
             )
             exitProcess(1)
         }
@@ -66,7 +66,9 @@ class XQLErrors {
             val digits = query.num.toString().length
             colorPrintln(
                 RED,
-                "\t" + " ".repeat(query.toString().length - 1 - digits) + "^".repeat(digits)
+                "\t"
+                        + " ".repeat(query.toString().length - 1 - digits)
+                        + "^".repeat(digits)
             )
             exitProcess(1)
         }
@@ -107,7 +109,9 @@ class XQLErrors {
             val digits = 2
             colorPrintln(
                 RED,
-                "\t" + " ".repeat(query.toString().length - digits) + "^".repeat(digits)
+                "\t"
+                        + " ".repeat(query.toString().length - digits)
+                        + "^".repeat(digits)
             )
             exitProcess(1)
         }
@@ -126,7 +130,9 @@ class XQLErrors {
             val digits = query.query.length
             colorPrintln(
                 RED,
-                "\t" + " ".repeat(query.toString().length - 2 - digits) + "^".repeat(digits + 2)
+                "\t"
+                        + " ".repeat(query.toString().length - 2 - digits)
+                        + "^".repeat(digits + 2)
             )
             colorPrint(CYAN, "help:")
             colorPrintln(RESET, " map operation on tags should be:")
@@ -151,7 +157,9 @@ class XQLErrors {
             val digits = query.query.length
             colorPrintln(
                 RED,
-                "\t" + " ".repeat(query.toString().length - 2 - digits) + "^".repeat(digits + 2)
+                "\t"
+                        + " ".repeat(query.toString().length - 2 - digits)
+                        + "^".repeat(digits + 2)
             )
             colorPrint(CYAN, "help:")
             colorPrint(RESET, " map operation should be used on lists of tags")
@@ -172,7 +180,9 @@ class XQLErrors {
             val digits = 1
             colorPrintln(
                 RED,
-                "\t" + " ".repeat(query.toString().length - digits) + "^".repeat(digits)
+                "\t"
+                        + " ".repeat(query.toString().length - digits)
+                        + "^".repeat(digits)
             )
             colorPrint(CYAN, "help:")
             colorPrint(RESET, " count operation should be used on lists/entities")

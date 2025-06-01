@@ -50,7 +50,7 @@ sealed class XMLElement {
 
         override fun count() = 1
 
-        override fun toString(): String {
+        fun indentToString(indentation: Int): String {
             val builder = StringBuilder()
             builder.append("<$name")
             attributes.forEach { builder.append(" $it") }
@@ -59,7 +59,27 @@ sealed class XMLElement {
                 return builder.toString()
             }
             builder.append(">\n")
-            content.forEach { builder.append("\t$it\n") }
+            content.forEach {
+                if (it is Tag) {
+                    builder.append("\t".repeat(indentation + 1) + it.indentToString(indentation + 1) + "\n")
+                } else {
+                    builder.append("\t".repeat(indentation + 1) + it.toString().trim() + "\n")
+                }
+            }
+            builder.append("\t".repeat(indentation) + "</$name>")
+            return builder.toString()
+        }
+
+        override fun toString(): String {
+            val builder = StringBuilder()
+            builder.append("<$name")
+            attributes.forEach { builder.append(" $it") }
+            if (content.isEmpty()) {
+                builder.append(" />")
+                return builder.toString()
+            }
+            builder.append(">")
+            content.forEach { builder.append(it) }
             builder.append("</$name>")
             return builder.toString()
         }
@@ -77,6 +97,8 @@ sealed class XMLElement {
 
         override fun count() = 1
 
+        fun indentToString() = root.indentToString(0)
+
         override fun toString() = root.toString()
 
     }
@@ -90,12 +112,11 @@ sealed class XMLElement {
 
         override fun count() = elements.size
 
-        // TODO // Weird.
         fun get(index: Int): XMLElement? {
             return try {
                 this.elements[index]
             } catch (_: Exception) {
-                null
+                throw NullPointerException("Index out of bounds.")
             }
         }
 

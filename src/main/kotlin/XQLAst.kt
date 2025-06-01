@@ -51,7 +51,6 @@ data class XQL(val parameters: List<String>, val instructions: List<Instruction?
 
     fun run() {
         instructions.forEach {
-            //println(it)
             when (it) {
                 is Load ->
                     dict[it.name] = XMLParser(
@@ -64,7 +63,14 @@ data class XQL(val parameters: List<String>, val instructions: List<Instruction?
 
                 is Assign -> dict[it.name] = exec(it.query)
 
-                is Save -> File(parameters[it.number - 1]).writeText(dict[it.name].toString())
+                is Save -> {
+                    val aux = dict[it.name]
+                    when (aux) {
+                        is XMLElement.Document -> File(parameters[it.number - 1]).writeText(aux.indentToString())
+                        is XMLElement.Tag -> File(parameters[it.number - 1]).writeText(aux.indentToString(0))
+                        else -> File(parameters[it.number - 1]).writeText(aux.toString())
+                    }
+                }
             }
         }
     }
@@ -269,7 +275,12 @@ fun XQLParser.CompositionContext.toAst(branch: Query): Query {
             when {
                 this.SUM() != null -> Query.Sum(Query.Arrow(branch, this.NAME().toString()))
                 this.COUNT() != null -> Query.Count(Query.Arrow(branch, this.NAME().toString()))
-                this.OFFSET() != null -> Query.Offset(Query.Arrow(branch, this.NAME().toString()), this.OFFSET().toString().removeSurrounding("[", "]").toInt())
+                this.OFFSET() != null ->
+                    Query.Offset(
+                        Query.Arrow(branch, this.NAME().toString()),
+                        this.OFFSET().toString().removeSurrounding("[", "]").toInt()
+                    )
+
                 else -> Query.Arrow(branch, this.NAME().toString())
             }
 
