@@ -28,14 +28,10 @@ sealed class XMLElement {
             }
             val tags: MutableList<Tag> = mutableListOf()
             for (i in content) {
-                when (i) {
-                    is Tag -> {
-                        if (i.name == query) {
-                            tags.add(i)
-                        }
+                if (i is Tag) {
+                    if (i.name == query) {
+                        tags.add(i)
                     }
-
-                    else -> {}
                 }
             }
             if (tags.size == 1) {
@@ -116,27 +112,19 @@ sealed class XMLElement {
         fun map(query: String): XMLElement {
             val results: MutableList<XMLElement> = mutableListOf()
             for (i in elements) {
-                when (i) {
-                    is Tag -> {
-                        for (j in i.attributes) {
-                            if (j.name == query) {
-                                results.add(Text(j.value))
-                            }
+                if (i is Tag) {
+                    for (j in i.attributes) {
+                        if (j.name == query) {
+                            results.add(Text(j.value))
                         }
-                        for (j in i.content) {
-                            when (j) {
-                                is Tag -> {
-                                    if (j.name == query) {
-                                        results.add(j.content[0])
-                                    }
-                                }
-
-                                else -> {}
+                    }
+                    for (j in i.content) {
+                        if (j is Tag) {
+                            if (j.name == query) {
+                                results.add(j.content[0])
                             }
                         }
                     }
-
-                    else -> {}
                 }
             }
             return ResultList(results)

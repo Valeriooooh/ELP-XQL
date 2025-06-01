@@ -77,7 +77,12 @@ data class XQL(val parameters: List<String>, val instructions: List<Instruction?
                 }
             }
 
-            is Query.Variable -> dict[query.name]
+            is Query.Variable -> {
+                if (dict[query.name] == null) {
+                    throw IllegalStateException("Variable \"" + query.name + "\" is not declared.")
+                }
+                dict[query.name]
+            }
 
             is Query.Offset -> {
                 when (val p = exec(query.prev)) {

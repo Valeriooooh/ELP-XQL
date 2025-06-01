@@ -8,7 +8,7 @@ import java.io.File
 
 fun main(args: Array<String>) {
     if (args.size != 3) {
-        print(
+        println(
             "XQL Interpreter\n" +
                     "Usage:\n" +
                     "\txql <XQL file> <Input XML file> <Output XML file>"
