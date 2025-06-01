@@ -29,7 +29,7 @@ SPACE   : (' ' | '\t')+;
 NEWLINE : '\n';
 
 ARGUMENT : '$' [1-9]+;
-NAME     : [a-z] [a-zA-Z]*;
+NAME     : [a-zA-Z] [a-zA-Z0-9]*;
 
 DOT      : '.';
 ARROW    : '->';

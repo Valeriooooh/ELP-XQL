@@ -23,31 +23,51 @@ class XQLErrors {
             print("$color$str$RESET\n")
         }
 
-        fun undeclared(name: String, line: Int?, region: String) {
+        fun undeclaredAssign(name: String, line: Int?, region: String) {
             colorPrint(RED, "SYNTAX ERROR:")
             colorPrint(RESET, " variable")
             colorPrint(GREEN, " $name")
             colorPrint(RESET, " undeclared on line")
-            colorPrintln(RED, " $line")
+            colorPrintln(CYAN, " $line")
             colorPrint(CYAN, "$line:")
-            colorPrintln(RESET, "\t$region")
-            colorPrintln(RED, "\t" + "^".repeat(name.length))
+            colorPrintln(RESET, "\t${region.trimStart()}")
+            colorPrintln(
+                RED, "\t" + " "
+                    .repeat(region.findAnyOf(listOf(name))?.first.toString().toInt())
+                        + "^"
+                    .repeat(name.length)
+            )
             exitProcess(1)
         }
 
-        fun indexOutOfBounds(query: Query) {
+        fun undeclaredSave(name: String, line: Int?, region: String) {
+            colorPrint(RED, "SYNTAX ERROR:")
+            colorPrint(RESET, " variable")
+            colorPrint(GREEN, " $name")
+            colorPrint(RESET, " undeclared on line")
+            colorPrintln(CYAN, " $line")
+            colorPrint(CYAN, "$line:")
+            colorPrintln(RESET, "\t$region")
+            colorPrintln(
+                RED, "\t" + " "
+                    .repeat(region.findAnyOf(listOf(name))?.first.toString().toInt())
+                        + "^"
+                    .repeat(name.length)
+            )
+            exitProcess(1)
+        }
+
+        fun indexOutOfBounds(query: Query.Offset) {
             colorPrint(RED, "RUNTIME ERROR:")
             colorPrintln(RESET, " index out of bounds")
-            if (query is Query.Offset) {
-                colorPrintln(CYAN, "│")
-                colorPrint(CYAN, "╰─>")
-                colorPrintln(RESET, "\t${query.toString()}")
-                val digits = query.num.toString().length
-                colorPrintln(
-                    RED,
-                    "\t" + " ".repeat(query.toString().length - 1 - digits) + "^".repeat(digits)
-                )
-            }
+            colorPrintln(CYAN, "│")
+            colorPrint(CYAN, "╰─>")
+            colorPrintln(RESET, "\t${query.toString()}")
+            val digits = query.num.toString().length
+            colorPrintln(
+                RED,
+                "\t" + " ".repeat(query.toString().length - 1 - digits) + "^".repeat(digits)
+            )
             exitProcess(1)
         }
 
@@ -73,7 +93,7 @@ class XQLErrors {
             exitProcess(1)
         }
 
-        fun illegalSumOperation(query: Query) {
+        fun illegalSumOperation(query: Query.Sum) {
             colorPrint(RED, "RUNTIME ERROR:")
             colorPrint(RESET, " illegal")
             colorPrint(RESET, " sum")
@@ -81,20 +101,18 @@ class XQLErrors {
             colorPrint(CYAN, "++")
             colorPrint(RESET, ")")
             colorPrintln(RESET, " operation")
-            if (query is Query.Sum) {
-                colorPrintln(CYAN, "│")
-                colorPrint(CYAN, "╰─>")
-                colorPrintln(RESET, "\t${query.toString()}")
-                val digits = 2
-                colorPrintln(
-                    RED,
-                    "\t" + " ".repeat(query.toString().length - digits) + "^".repeat(digits)
-                )
-            }
+            colorPrintln(CYAN, "│")
+            colorPrint(CYAN, "╰─>")
+            colorPrintln(RESET, "\t${query.toString()}")
+            val digits = 2
+            colorPrintln(
+                RED,
+                "\t" + " ".repeat(query.toString().length - digits) + "^".repeat(digits)
+            )
             exitProcess(1)
         }
 
-        fun invalidMapOperation(query: Query) {
+        fun invalidMapOperation(query: Query.Arrow) {
             colorPrint(RED, "RUNTIME ERROR:")
             colorPrint(RESET, " invalid")
             colorPrint(RESET, " map")
@@ -102,26 +120,24 @@ class XQLErrors {
             colorPrint(CYAN, "->")
             colorPrint(RESET, ")")
             colorPrintln(RESET, " operation:")
-            if (query is Query.Arrow) {
-                colorPrintln(CYAN, "│")
-                colorPrint(CYAN, "╰─>")
-                colorPrintln(RESET, "\t${query.toString()}")
-                val digits = query.query.length
-                colorPrintln(
-                    RED,
-                    "\t" + " ".repeat(query.toString().length - 2 - digits) + "^".repeat(digits + 2)
-                )
-                colorPrint(CYAN, "help:")
-                colorPrintln(RESET, " map operation on tags should be:")
-                colorPrintln(
-                    RESET,
-                    "\t${query.toString().reversed().replaceFirst(">-", ".").reversed()}"
-                )
-            }
+            colorPrintln(CYAN, "│")
+            colorPrint(CYAN, "╰─>")
+            colorPrintln(RESET, "\t${query.toString()}")
+            val digits = query.query.length
+            colorPrintln(
+                RED,
+                "\t" + " ".repeat(query.toString().length - 2 - digits) + "^".repeat(digits + 2)
+            )
+            colorPrint(CYAN, "help:")
+            colorPrintln(RESET, " map operation on tags should be:")
+            colorPrintln(
+                RESET,
+                "\t${query.toString().reversed().replaceFirst(">-", ".").reversed()}"
+            )
             exitProcess(1)
         }
 
-        fun illegalMapOperation(query: Query) {
+        fun illegalMapOperation(query: Query.Arrow) {
             colorPrint(RED, "RUNTIME ERROR:")
             colorPrint(RESET, " illegal")
             colorPrint(RESET, " map")
@@ -129,22 +145,20 @@ class XQLErrors {
             colorPrint(CYAN, "->")
             colorPrint(RESET, ")")
             colorPrintln(RESET, " operation")
-            if (query is Query.Arrow) {
-                colorPrintln(CYAN, "│")
-                colorPrint(CYAN, "╰─>")
-                colorPrintln(RESET, "\t${query.toString()}")
-                val digits = query.query.length
-                colorPrintln(
-                    RED,
-                    "\t" + " ".repeat(query.toString().length - 2 - digits) + "^".repeat(digits + 2)
-                )
-                colorPrint(CYAN, "help:")
-                colorPrint(RESET, " map operation should be used on lists of tags")
-            }
+            colorPrintln(CYAN, "│")
+            colorPrint(CYAN, "╰─>")
+            colorPrintln(RESET, "\t${query.toString()}")
+            val digits = query.query.length
+            colorPrintln(
+                RED,
+                "\t" + " ".repeat(query.toString().length - 2 - digits) + "^".repeat(digits + 2)
+            )
+            colorPrint(CYAN, "help:")
+            colorPrint(RESET, " map operation should be used on lists of tags")
             exitProcess(1)
         }
 
-        fun illegalCountOperation(query: Query) {
+        fun illegalCountOperation(query: Query.Count) {
             colorPrint(RED, "RUNTIME ERROR:")
             colorPrint(RESET, " illegal")
             colorPrint(RESET, " count")
@@ -152,18 +166,16 @@ class XQLErrors {
             colorPrint(CYAN, "#")
             colorPrint(RESET, ")")
             colorPrintln(RESET, " operation")
-            if (query is Query.Count) {
-                colorPrintln(CYAN, "│")
-                colorPrint(CYAN, "╰─>")
-                colorPrintln(RESET, "\t${query.toString()}")
-                val digits = 1
-                colorPrintln(
-                    RED,
-                    "\t" + " ".repeat(query.toString().length - digits) + "^".repeat(digits)
-                )
-                colorPrint(CYAN, "help:")
-                colorPrint(RESET, " count operation should be used on lists/entities")
-            }
+            colorPrintln(CYAN, "│")
+            colorPrint(CYAN, "╰─>")
+            colorPrintln(RESET, "\t${query.toString()}")
+            val digits = 1
+            colorPrintln(
+                RED,
+                "\t" + " ".repeat(query.toString().length - digits) + "^".repeat(digits)
+            )
+            colorPrint(CYAN, "help:")
+            colorPrint(RESET, " count operation should be used on lists/entities")
             exitProcess(1)
         }
 

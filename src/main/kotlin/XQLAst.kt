@@ -51,6 +51,7 @@ data class XQL(val parameters: List<String>, val instructions: List<Instruction?
 
     fun run() {
         instructions.forEach {
+            //println(it)
             when (it) {
                 is Load ->
                     dict[it.name] = XMLParser(
@@ -218,19 +219,19 @@ fun XQLParser.InstructionContext.toAst(): Instruction? {
     return when {
         this.load() != null ->
             Load(
-                this.load().variable().NAME().toString(),
+                this.load().NAME().toString(),
                 this.load().ARGUMENT().toString().removePrefix("$").toInt()
             )
 
         this.save() != null ->
             Save(
-                this.save().variable().NAME().toString(),
+                this.save().NAME().toString(),
                 this.save().ARGUMENT().toString().removePrefix("$").toInt()
             )
 
         this.assign() != null ->
             Assign(
-                this.assign().variable().NAME().toString(),
+                this.assign().NAME().toString(),
                 this.assign().expression().toAst()
             )
 
@@ -244,9 +245,9 @@ fun XQLParser.ExpressionContext.toAst(): Query {
             Query.Template(this.TEMPLATE().toString().removeSurrounding("***"))
 
         this.composition() != null ->
-            this.composition().toAst(Query.Variable(this.variable().NAME().toString()))
+            this.composition().toAst(Query.Variable(this.NAME().toString()))
 
-        else -> Query.Variable(this.variable().NAME().toString())
+        else -> Query.Variable(this.NAME().toString())
     }
 }
 
@@ -257,18 +258,19 @@ fun XQLParser.CompositionContext.toAst(branch: Query): Query {
                 this.composition().toAst(
                     Query.Dot(
                         branch,
-                        this.variable().NAME().toString()
+                        this.NAME().toString()
                     )
                 )
             } else {
-                Query.Dot(branch, this.variable().NAME().toString())
+                Query.Dot(branch, this.NAME().toString())
             }
 
         this.ARROW() != null ->
             when {
-                this.SUM() != null -> Query.Sum(Query.Arrow(branch, this.attribute().NAME().toString()))
-                this.COUNT() != null -> Query.Count(Query.Arrow(branch, this.attribute().NAME().toString()))
-                else -> Query.Arrow(branch, this.attribute().NAME().toString())
+                this.SUM() != null -> Query.Sum(Query.Arrow(branch, this.NAME().toString()))
+                this.COUNT() != null -> Query.Count(Query.Arrow(branch, this.NAME().toString()))
+                this.OFFSET() != null -> Query.Offset(Query.Arrow(branch, this.NAME().toString()), this.OFFSET().toString().removeSurrounding("[", "]").toInt())
+                else -> Query.Arrow(branch, this.NAME().toString())
             }
 
         this.COUNT() != null -> Query.Count(branch)
@@ -302,23 +304,33 @@ class XQLListener : XQLBaseListener() {
         if (context == null) {
             return
         }
-        declared.add(context.variable()?.NAME()?.text.toString())
+        declared.add(context.NAME()?.text.toString())
     }
 
     override fun enterLoad(context: XQLParser.LoadContext?) {
         if (context == null) {
             return
         }
-        declared.add(context.variable()?.NAME()?.text.toString())
+        declared.add(context.NAME()?.text.toString())
+    }
+
+    override fun enterSave(context: XQLParser.SaveContext?) {
+        if (context == null) {
+            return
+        }
+        val name = context.NAME()?.text.toString()
+        if (!(name == "null" || declared.contains(name))) {
+            XQLErrors.undeclaredSave(name, context.start?.line, context.text)
+        }
     }
 
     override fun enterExpression(context: XQLParser.ExpressionContext?) {
         if (context == null) {
             return
         }
-        val name = context.variable()?.NAME()?.text.toString()
+        val name = context.NAME()?.text.toString()
         if (!(name == "null" || declared.contains(name))) {
-            XQLErrors.undeclared(name, context.variable().start?.line, context.text)
+            XQLErrors.undeclaredAssign(name, context.start?.line, context.text)
         }
     }
 

@@ -16,9 +16,7 @@ sealed class XMLElement {
     }
 
     data class Tag(
-        val name: String,
-        val attributes: List<Attribute>,
-        var content: List<XMLElement>
+        val name: String, val attributes: List<Attribute>, var content: List<XMLElement>
     ) : Queryable, XMLElement() {
 
         override fun find(query: String): XMLElement {
@@ -60,8 +58,8 @@ sealed class XMLElement {
                 builder.append(" />")
                 return builder.toString()
             }
-            builder.append(">")
-            content.forEach { builder.append(it) }
+            builder.append(">\n")
+            content.forEach { builder.append("\t$it\n") }
             builder.append("</$name>")
             return builder.toString()
         }
