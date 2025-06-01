@@ -45,8 +45,8 @@ sealed class XMLElement {
                 }
                 return tags[0]
             }
-            if (tags.isEmpty()){
-                XQLErrors().notExist(query)
+            if (tags.isEmpty()) {
+                XQLErrors.notExist(query)
             }
             return ResultList(tags)
         }
@@ -90,9 +90,10 @@ sealed class XMLElement {
     data class ResultList(val elements: List<XMLElement>) : Queryable, XMLElement() {
 
         override fun find(query: String): XMLElement? {
-            XQLErrors().notExist(query)
+            XQLErrors.notExist(query)
             exitProcess(1)
         }
+
         override fun count(): Int = elements.size
 
         fun get(index: Int): XMLElement? {
@@ -111,14 +112,14 @@ sealed class XMLElement {
                     try {
                         sum += i.text.toDouble()
                     } catch (_: NumberFormatException) {
-                        XQLErrors().invalidSumOperation(i.text)
+                        XQLErrors.invalidSumOperation(i.text)
                     }
                 }
             }
-            if (sum - sum.toInt().toDouble() == 0.0){
-                return Text("" + sum.toInt() )
-            }else{
-                return Text("" + sum )
+            if (sum - sum.toInt().toDouble() == 0.0) {
+                return Text("" + sum.toInt())
+            } else {
+                return Text("" + sum)
             }
         }
 
@@ -140,8 +141,8 @@ sealed class XMLElement {
                     }
                 }
             }
-            if(results.isEmpty()){
-                XQLErrors().notExist(query)
+            if (results.isEmpty()) {
+                XQLErrors.notExist(query)
                 exitProcess(1)
             }
             return ResultList(results)
@@ -150,8 +151,8 @@ sealed class XMLElement {
 
         override fun toString(): String {
             var inn = ""
-            for( i in elements){
-                inn+="\"$i\","
+            for (i in elements) {
+                inn += "\"$i\","
             }
             inn = inn.removeSuffix(",")
             return "[$inn]"

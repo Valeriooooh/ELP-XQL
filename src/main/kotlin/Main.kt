@@ -16,17 +16,13 @@ fun main(args: Array<String>) {
         )
         return;
     }
-    val listener = XQLListener()
-    val walker = ParseTreeWalker()
-
-    val xql_tree = XQLParser(
+    val xql = XQLParser(
         CommonTokenStream(
             XQLLexer(
                 CharStreams.fromString(File(args[0]).readText().trimIndent())
             )
         )
     ).document();
-    walker.walk(listener, xql_tree)
-
-    xql_tree.toAst(listOf(args[1], args[2])).run()
+    ParseTreeWalker().walk(XQLListener(), xql)
+    xql.toAst(listOf(args[1], args[2])).run()
 }
