@@ -60,18 +60,4 @@ public class XQLBaseVisitor<T> extends AbstractParseTreeVisitor<T> implements XQ
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
 	@Override public T visitComposition(XQLParser.CompositionContext ctx) { return visitChildren(ctx); }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation returns the result of calling
-	 * {@link #visitChildren} on {@code ctx}.</p>
-	 */
-	@Override public T visitVariable(XQLParser.VariableContext ctx) { return visitChildren(ctx); }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation returns the result of calling
-	 * {@link #visitChildren} on {@code ctx}.</p>
-	 */
-	@Override public T visitAttribute(XQLParser.AttributeContext ctx) { return visitChildren(ctx); }
 }

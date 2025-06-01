@@ -4,22 +4,19 @@ document: (instruction SPACE? (COMMENT | NEWLINE+))* instruction SPACE? (COMMENT
 
 instruction: (SPACE | NEWLINE)* (load | assign | save);
 
-load   : LOAD SPACE ARGUMENT SPACE TO SPACE variable;
-assign : variable SPACE EQUALS SPACE expression;
-save   : SAVE SPACE variable SPACE TO SPACE ARGUMENT;
+load   : LOAD SPACE ARGUMENT SPACE TO SPACE NAME;
+assign : NAME SPACE EQUALS SPACE expression;
+save   : SAVE SPACE NAME SPACE TO SPACE ARGUMENT;
 
-expression: variable composition? | TEMPLATE;
+expression: NAME composition? | TEMPLATE;
 
 composition:
-    DOT variable composition?
-    | ARROW attribute (SUM | COUNT)?
+    DOT NAME composition?
+    | ARROW NAME (SUM | COUNT | OFFSET)?
     | COUNT
     | OFFSET composition?
     | SUM
 ;
-
-variable  : NAME;
-attribute : NAME;
 
 LOAD   : 'load';
 TO     : 'to';

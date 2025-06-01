@@ -76,24 +76,4 @@ public interface XQLListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitComposition(XQLParser.CompositionContext ctx);
-	/**
-	 * Enter a parse tree produced by {@link XQLParser#variable}.
-	 * @param ctx the parse tree
-	 */
-	void enterVariable(XQLParser.VariableContext ctx);
-	/**
-	 * Exit a parse tree produced by {@link XQLParser#variable}.
-	 * @param ctx the parse tree
-	 */
-	void exitVariable(XQLParser.VariableContext ctx);
-	/**
-	 * Enter a parse tree produced by {@link XQLParser#attribute}.
-	 * @param ctx the parse tree
-	 */
-	void enterAttribute(XQLParser.AttributeContext ctx);
-	/**
-	 * Exit a parse tree produced by {@link XQLParser#attribute}.
-	 * @param ctx the parse tree
-	 */
-	void exitAttribute(XQLParser.AttributeContext ctx);
 }

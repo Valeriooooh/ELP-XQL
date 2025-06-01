@@ -51,16 +51,4 @@ public interface XQLVisitor<T> extends ParseTreeVisitor<T> {
 	 * @return the visitor result
 	 */
 	T visitComposition(XQLParser.CompositionContext ctx);
-	/**
-	 * Visit a parse tree produced by {@link XQLParser#variable}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitVariable(XQLParser.VariableContext ctx);
-	/**
-	 * Visit a parse tree produced by {@link XQLParser#attribute}.
-	 * @param ctx the parse tree
-	 * @return the visitor result
-	 */
-	T visitAttribute(XQLParser.AttributeContext ctx);
 }
