@@ -12,7 +12,7 @@ expression: variable composition? | TEMPLATE;
 
 composition:
     DOT variable composition?
-    | ARROW attribute SUM?
+    | ARROW attribute (SUM | COUNT)?
     | COUNT
     | OFFSET composition?
     | SUM
@@ -31,12 +31,12 @@ COMMENT: '//' .*? (NEWLINE+ | EOF);
 SPACE   : (' ' | '\t')+;
 NEWLINE : '\n';
 
-ARGUMENT : '$' [1-9];
+ARGUMENT : '$' [1-9]+;
 NAME     : [a-z] [a-zA-Z]*;
 
 DOT      : '.';
 ARROW    : '->';
 COUNT    : '#';
-OFFSET   : '[' [0-9] ']';
+OFFSET   : '[' [0-9]+ ']';
 SUM      : '++';
 TEMPLATE : '***' .*? '***';

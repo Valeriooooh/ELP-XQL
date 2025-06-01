@@ -1,5 +1,7 @@
 package org.example
 
+import kotlin.system.exitProcess
+
 interface Queryable {
     fun find(query: String): XMLElement?
     fun count(): Int
@@ -43,10 +45,13 @@ sealed class XMLElement {
                 }
                 return tags[0]
             }
+            if (tags.isEmpty()){
+                XQLErrors().notExist(query)
+            }
             return ResultList(tags)
         }
 
-        override fun count(): Int = 0
+        override fun count(): Int = 1
 
         override fun toString(): String {
             val builder = StringBuilder()
@@ -75,7 +80,7 @@ sealed class XMLElement {
             return null
         }
 
-        override fun count(): Int = 0
+        override fun count(): Int = 1
 
         override fun toString(): String {
             return root.toString()
@@ -84,29 +89,37 @@ sealed class XMLElement {
 
     data class ResultList(val elements: List<XMLElement>) : Queryable, XMLElement() {
 
-        override fun find(query: String): XMLElement? = null
+        override fun find(query: String): XMLElement? {
+            XQLErrors().notExist(query)
+            exitProcess(1)
+        }
         override fun count(): Int = elements.size
 
         fun get(index: Int): XMLElement? {
             return try {
                 this.elements[index]
             } catch (_: Exception) {
+                // NOTE: Estranho
                 null
             }
         }
 
         fun sum(): XMLElement? {
-            var sum = 0
+            var sum = 0.0
             for (i in elements) {
                 if (i is Text) {
                     try {
-                        sum += i.text.toInt()
+                        sum += i.text.toDouble()
                     } catch (_: NumberFormatException) {
-                        throw IllegalArgumentException("Invalid sum operation: \"" + i.text + "\" is not a valid integer.")
+                        XQLErrors().invalidSumOperation(i.text)
                     }
                 }
             }
-            return Text("" + sum)
+            if (sum - sum.toInt().toDouble() == 0.0){
+                return Text("" + sum.toInt() )
+            }else{
+                return Text("" + sum )
+            }
         }
 
         fun map(query: String): XMLElement {
@@ -127,7 +140,21 @@ sealed class XMLElement {
                     }
                 }
             }
+            if(results.isEmpty()){
+                XQLErrors().notExist(query)
+                exitProcess(1)
+            }
             return ResultList(results)
+        }
+
+
+        override fun toString(): String {
+            var inn = ""
+            for( i in elements){
+                inn+="\"$i\","
+            }
+            inn = inn.removeSuffix(",")
+            return "[$inn]"
         }
     }
 
