@@ -1,7 +1,5 @@
 package org.example
 
-import kotlin.system.exitProcess
-
 interface Queryable {
     fun find(query: String): XMLElement?
     fun count(): Int
@@ -10,11 +8,11 @@ interface Queryable {
 sealed class XMLElement {
 
     data class Attribute(val name: String, var value: String) : XMLElement() {
-        override fun toString(): String = "$name=\"$value\""
+        override fun toString() = "$name=\"$value\""
     }
 
     data class Text(val text: String) : XMLElement() {
-        override fun toString(): String = text
+        override fun toString() = text
     }
 
     data class Tag(
@@ -22,17 +20,18 @@ sealed class XMLElement {
         val attributes: List<Attribute>,
         var content: List<XMLElement>
     ) : Queryable, XMLElement() {
+
         override fun find(query: String): XMLElement {
-            for (i in attributes) {
-                if (i.name == query) {
-                    return Text(i.value)
+            attributes.forEach {
+                if (it.name == query) {
+                    return Text(it.value)
                 }
             }
             val tags: MutableList<Tag> = mutableListOf()
-            for (i in content) {
-                if (i is Tag) {
-                    if (i.name == query) {
-                        tags.add(i)
+            content.forEach {
+                if (it is Tag) {
+                    if (it.name == query) {
+                        tags.add(it)
                     }
                 }
             }
@@ -46,33 +45,31 @@ sealed class XMLElement {
                 return tags[0]
             }
             if (tags.isEmpty()) {
-                XQLErrors.notExist(query)
+                XQLErrors.notExists(query)
             }
             return ResultList(tags)
         }
 
-        override fun count(): Int = 1
+        override fun count() = 1
 
         override fun toString(): String {
             val builder = StringBuilder()
             builder.append("<$name")
-            for (i in attributes) {
-                builder.append(" $i")
-            }
+            attributes.forEach { builder.append(" $it") }
             if (content.isEmpty()) {
                 builder.append(" />")
                 return builder.toString()
             }
             builder.append(">")
-            for (i in content) {
-                builder.append(i)
-            }
+            content.forEach { builder.append(it) }
             builder.append("</$name>")
             return builder.toString()
         }
+
     }
 
     data class Document(val root: Tag) : Queryable, XMLElement() {
+
         override fun find(query: String): XMLElement? {
             if (root.name == query) {
                 return root
@@ -80,83 +77,79 @@ sealed class XMLElement {
             return null
         }
 
-        override fun count(): Int = 1
+        override fun count() = 1
 
-        override fun toString(): String {
-            return root.toString()
-        }
+        override fun toString() = root.toString()
+
     }
 
     data class ResultList(val elements: List<XMLElement>) : Queryable, XMLElement() {
 
         override fun find(query: String): XMLElement? {
-            XQLErrors.notExist(query)
-            exitProcess(1)
+            XQLErrors.notExists(query)
+            return null
         }
 
-        override fun count(): Int = elements.size
+        override fun count() = elements.size
 
+        // TODO // Weird.
         fun get(index: Int): XMLElement? {
             return try {
                 this.elements[index]
             } catch (_: Exception) {
-                // NOTE: Estranho
                 null
             }
         }
 
         fun sum(): XMLElement? {
             var sum = 0.0
-            for (i in elements) {
-                if (i is Text) {
+            elements.forEach {
+                if (it is Text) {
                     try {
-                        sum += i.text.toDouble()
+                        sum += it.text.toDouble()
                     } catch (_: NumberFormatException) {
-                        XQLErrors.invalidSumOperation(i.text)
+                        XQLErrors.invalidSumOperation(it.text)
                     }
                 }
             }
             if (sum - sum.toInt().toDouble() == 0.0) {
                 return Text("" + sum.toInt())
-            } else {
-                return Text("" + sum)
             }
+            return Text("" + sum)
         }
 
         fun map(query: String): XMLElement {
             val results: MutableList<XMLElement> = mutableListOf()
-            for (i in elements) {
-                if (i is Tag) {
-                    for (j in i.attributes) {
-                        if (j.name == query) {
-                            results.add(Text(j.value))
+            elements.forEach { element ->
+                if (element is Tag) {
+                    element.attributes.forEach { attribute ->
+                        if (attribute.name == query) {
+                            results.add(Text(attribute.value))
                         }
                     }
-                    for (j in i.content) {
-                        if (j is Tag) {
-                            if (j.name == query) {
-                                results.add(j.content[0])
+                    element.content.forEach { child ->
+                        if (child is Tag) {
+                            if (child.name == query) {
+                                results.add(child.content[0])
                             }
                         }
                     }
                 }
             }
             if (results.isEmpty()) {
-                XQLErrors.notExist(query)
-                exitProcess(1)
+                XQLErrors.notExists(query)
             }
             return ResultList(results)
         }
 
-
         override fun toString(): String {
-            var inn = ""
-            for (i in elements) {
-                inn += "\"$i\","
+            val builder = StringBuilder()
+            elements.forEach {
+                builder.append("\"$it\",")
             }
-            inn = inn.removeSuffix(",")
-            return "[$inn]"
+            return "[" + builder.removeSuffix(",") + "]"
         }
+
     }
 
 }
@@ -167,14 +160,13 @@ fun XMLParser.DocumentContext.toAst(): XMLElement.Document {
 
 fun XMLParser.ElementContext.toAst(): XMLElement.Tag {
     val attributes: MutableList<XMLElement.Attribute> = mutableListOf()
-    for (i in this.attribute()) {
-        attributes.add(XMLElement.Attribute(name = i.Name().text, value = i.STRING().text.trim('"')))
+    this.attribute().forEach {
+        attributes.add(XMLElement.Attribute(name = it.Name().text, value = it.STRING().text.trim('"')))
     }
-    return if (this.content() == null) {
-        XMLElement.Tag(name = this.Name()[0].text, attributes = attributes, content = listOf())
-    } else {
-        XMLElement.Tag(name = this.Name()[0].text, attributes = attributes, content = this.content().toAst())
+    if (this.content() == null) {
+        return XMLElement.Tag(name = this.Name()[0].text, attributes = attributes, content = listOf())
     }
+    return XMLElement.Tag(name = this.Name()[0].text, attributes = attributes, content = this.content().toAst())
 }
 
 fun XMLParser.ContentContext.toAst(): List<XMLElement> {

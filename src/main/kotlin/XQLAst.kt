@@ -5,9 +5,7 @@ import XMLParser
 import XQLBaseListener
 import org.antlr.v4.runtime.CharStreams
 import org.antlr.v4.runtime.CommonTokenStream
-import org.antlr.v4.runtime.tree.ParseTreeWalker
 import java.io.File
-import kotlin.system.exitProcess
 
 interface Instruction
 
@@ -16,6 +14,7 @@ data class Assign(val name: String, val query: Query) : Instruction
 data class Save(val name: String, val number: Int) : Instruction
 
 sealed class Query {
+
     data class Dot(val prev: Query, val query: String) : Query() {
         override fun toString() = "$prev.$query"
     }
@@ -43,6 +42,7 @@ sealed class Query {
     data class Template(val xml: String) : Query() {
         override fun toString() = xml
     }
+
 }
 
 data class XQL(val parameters: List<String>, val instructions: List<Instruction?>) {
@@ -50,92 +50,83 @@ data class XQL(val parameters: List<String>, val instructions: List<Instruction?
     private val dict: MutableMap<String, XMLElement?> = mutableMapOf()
 
     fun run() {
-        for (i in instructions) {
-            when (i) {
-                is Load -> {
-                    dict[i.name] = XMLParser(
+        instructions.forEach {
+            when (it) {
+                is Load ->
+                    dict[it.name] = XMLParser(
                         CommonTokenStream(
                             XMLLexer(
-                                CharStreams.fromString(File(parameters[i.number - 1]).readText().trimIndent())
+                                CharStreams.fromString(File(parameters[it.number - 1]).readText().trimIndent())
                             )
                         )
                     ).document().toAst().root
-                }
 
-                is Assign -> dict[i.name] = exec(i.query)
+                is Assign -> dict[it.name] = exec(it.query)
 
-                is Save -> File(parameters[i.number - 1]).writeText(dict[i.name].toString())
+                is Save -> File(parameters[it.number - 1]).writeText(dict[it.name].toString())
             }
         }
     }
 
     private fun exec(query: Query): XMLElement? {
         return when (query) {
-            is Query.Arrow -> {
+            is Query.Arrow ->
                 when (val p = exec(query.prev)) {
                     is XMLElement.ResultList -> p.map(query.query)
                     is XMLElement.Tag -> {
                         XQLErrors.invalidMapOperation(query)
-                        exitProcess(1)
+                        null
                     }
 
                     else -> {
                         XQLErrors.illegalMapOperation(query)
-                        exitProcess(1)
+                        null
                     }
                 }
-            }
 
-            is Query.Sum -> {
+            is Query.Sum ->
                 when (val p = exec(query.prev)) {
                     is XMLElement.ResultList -> p.sum()
                     else -> {
                         XQLErrors.illegalSumOperation(query)
-                        exitProcess(1)
-                    }
-                }
-            }
-
-            is Query.Dot -> {
-                when (val p = exec(query.prev)) {
-                    is XMLElement.Tag -> p.find(query.query)
-                    is XMLElement.Document -> p.find(query.query)
-                    else -> {
                         null
                     }
                 }
-            }
 
-            is Query.Count -> {
+            is Query.Dot ->
+                when (val p = exec(query.prev)) {
+                    is XMLElement.Tag -> p.find(query.query)
+                    is XMLElement.Document -> p.find(query.query)
+                    else -> null
+                }
+
+            is Query.Count ->
                 when (val p = exec(query.prev)) {
                     is XMLElement.ResultList, is XMLElement.Tag, is XMLElement.Document -> XMLElement.Text("" + p.count())
                     else -> {
                         XQLErrors.illegalCountOperation(query)
-                        exitProcess(1)
+                        null
                     }
                 }
-            }
 
-            is Query.Variable -> {
-                dict[query.name]
-            }
+            is Query.Variable -> dict[query.name]
 
-            is Query.Offset -> {
+            is Query.Offset ->
                 when (val p = exec(query.prev)) {
                     is XMLElement.ResultList -> try {
                         p.elements[query.num]
                     } catch (_: Exception) {
                         XQLErrors.indexOutOfBounds(query)
-                        exitProcess(1)
-                    }
-
-                    else -> if (query.num == 0) {
-                        p
-                    } else {
                         null
                     }
+
+                    else ->
+                        if (query.num == 0) {
+                            p
+                        } else {
+                            null
+                        }
                 }
-            }
 
             is Query.Template -> refactor(query)
         }
@@ -211,9 +202,7 @@ data class XQL(val parameters: List<String>, val instructions: List<Instruction?
 
     override fun toString(): String {
         val builder = StringBuilder()
-        for (i in dict.keys) {
-            builder.append("$i: " + dict[i] + "\n")
-        }
+        dict.keys.forEach { builder.append("$it: " + dict[it] + "\n") }
         return builder.toString()
     }
 
@@ -301,41 +290,36 @@ fun XQLParser.CompositionContext.toAst(branch: Query): Query {
 
         this.SUM() != null -> Query.Sum(branch)
 
-        else -> throw IllegalArgumentException("Invalid type of query.")
+        else -> throw IllegalStateException("Invalid type of expression.")
     }
 }
 
-
 class XQLListener : XQLBaseListener() {
+
     val declared = mutableListOf<String>()
 
-    override fun enterAssign(ctx: XQLParser.AssignContext?) {
-        if (ctx == null) {
+    override fun enterAssign(context: XQLParser.AssignContext?) {
+        if (context == null) {
             return
         }
-        val name = ctx.variable()?.NAME()?.text.toString()
-        declared.add(name)
+        declared.add(context.variable()?.NAME()?.text.toString())
     }
 
-    override fun enterLoad(ctx: XQLParser.LoadContext?) {
-        if (ctx == null) {
+    override fun enterLoad(context: XQLParser.LoadContext?) {
+        if (context == null) {
             return
         }
-        val name = ctx.variable()?.NAME()?.text.toString()
-        declared.add(name)
+        declared.add(context.variable()?.NAME()?.text.toString())
     }
 
-    override fun enterExpression(ctx: XQLParser.ExpressionContext?) {
-        if (ctx == null) {
+    override fun enterExpression(context: XQLParser.ExpressionContext?) {
+        if (context == null) {
             return
         }
-        val name = ctx.variable()?.NAME()?.text.toString()
-        if (name != "null") {
-            if (!declared.contains(name)) {
-                val region = ctx.text
-                val line = ctx.variable().start?.line
-                XQLErrors.undeclared(name, line, region)
-            }
+        val name = context.variable()?.NAME()?.text.toString()
+        if (!(name == "null" || declared.contains(name))) {
+            XQLErrors.undeclared(name, context.variable().start?.line, context.text)
         }
     }
+
 }
