@@ -140,6 +140,7 @@ data class XQL(val parameters: List<String>, val instructions: List<Instruction?
                         if (query.num == 0) {
                             p
                         } else {
+                            XQLErrors.indexOutOfBounds(query)
                             null
                         }
                 }
