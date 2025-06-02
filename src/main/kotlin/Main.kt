@@ -6,6 +6,7 @@ import org.antlr.v4.runtime.CharStreams
 import org.antlr.v4.runtime.CommonTokenStream
 import org.antlr.v4.runtime.tree.ParseTreeWalker
 import java.io.File
+import kotlin.system.exitProcess
 
 fun main(args: Array<String>) {
     if (args.size != 3) {
@@ -14,15 +15,19 @@ fun main(args: Array<String>) {
                     "Usage:\n" +
                     "\txql <XQL file> <Input XML file> <Output XML file>"
         )
-        return
+        exitProcess(1)
     }
-    val xql = XQLParser(
+    val parser = XQLParser(
         CommonTokenStream(
             XQLLexer(
                 CharStreams.fromString(File(args[0]).readText().trimIndent())
             )
         )
     ).document()
-    ParseTreeWalker().walk(XQLListener(), xql)
-    xql.toAst(listOf(args[1], args[2])).run()
+    ParseTreeWalker().walk(XQLListener(), parser)
+    val xql = parser.toAst(listOf(args[1], args[2]))
+    xql.run()
+
+    // Uncomment this for verbose mode.
+    // println(xql)
 }
