@@ -107,12 +107,10 @@ data class XQL(val parameters: List<String>, val instructions: List<Instruction?
                     is XMLElement.Tag -> p.find(query.query)
                     is XMLElement.Document -> p.find(query.query)
 
-                    is XMLElement.ResultList -> {
-                        XQLErrors.invalidDotOperation(query)
+                    else -> {
+                        XQLErrors.illegalDotOperation(query)
                         null
                     }
-
-                    else -> null
                 }
 
             is Query.Count ->

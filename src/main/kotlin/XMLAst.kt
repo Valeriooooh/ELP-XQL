@@ -112,14 +112,6 @@ sealed class XMLElement {
 
         override fun count() = elements.size
 
-        fun get(index: Int): XMLElement? {
-            return try {
-                this.elements[index]
-            } catch (_: Exception) {
-                throw NullPointerException("Index out of bounds.")
-            }
-        }
-
         fun sum(): XMLElement? {
             var sum = 0.0
             elements.forEach {
