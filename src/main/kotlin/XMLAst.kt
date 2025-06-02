@@ -92,7 +92,7 @@ sealed class XMLElement {
             if (root.name == query) {
                 return root
             }
-            return null
+            return root.find(query)
         }
 
         override fun count() = 1
@@ -202,5 +202,5 @@ fun XMLParser.ChardataContext.toAst(): XMLElement {
     if (this.TEXT() == null) {
         return XMLElement.Text("")
     }
-    return XMLElement.Text(this.TEXT().toString())
+    return XMLElement.Text(this.TEXT().toString().trim())
 }
