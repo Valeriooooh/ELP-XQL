@@ -113,7 +113,9 @@ data class XQL(val parameters: List<String>, val instructions: List<Instruction?
 
             is Query.Count ->
                 when (val p = exec(query.prev)) {
-                    is XMLElement.ResultList, is XMLElement.Tag, is XMLElement.Document -> XMLElement.Text("" + p.count())
+                    is XMLElement.ResultList, is XMLElement.Tag, is XMLElement.Document ->
+                        XMLElement.Text("" + p.count())
+
                     else -> {
                         XQLErrors.illegalCountOperation(query)
                         null
@@ -182,17 +184,21 @@ data class XQL(val parameters: List<String>, val instructions: List<Instruction?
                 return content
             }
 
-            parent.attributes.forEach { attribute ->
-                if (Regex("\\$\\w*").matches(attribute.value)) {
-                    attribute.value = dict[attribute.value.removePrefix("$")].toString()
+            parent.attributes.forEach {
+                if (Regex("\\$\\w*").matches(it.value)) {
+                    it.value = dict[it.value.removePrefix("$")].toString()
                 }
             }
-            parent.content.forEach { child ->
-                if (child is XMLElement.Tag) {
-                    if (Regex("\\w+\\$\\w+").matches(child.name)) {
-                        parent.content = expand(child, parent.content)
+            parent.content.forEach {
+                if (it is XMLElement.Tag) {
+                    if (Regex("\\w+\\$\\w+").matches(it.name)) {
+                        parent.content = expand(it, parent.content)
                     }
-                    eval(child)
+                }
+            }
+            parent.content.forEach {
+                if (it is XMLElement.Tag) {
+                    eval(it)
                 }
             }
             return parent
@@ -279,6 +285,7 @@ fun XQLParser.CompositionContext.toAst(branch: Query): Query {
             when {
                 this.SUM() != null -> Query.Sum(Query.Arrow(branch, this.NAME().toString()))
                 this.COUNT() != null -> Query.Count(Query.Arrow(branch, this.NAME().toString()))
+
                 this.OFFSET() != null ->
                     Query.Offset(
                         Query.Arrow(branch, this.NAME().toString()),
