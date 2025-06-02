@@ -6,6 +6,7 @@ import XQLBaseListener
 import org.antlr.v4.runtime.CharStreams
 import org.antlr.v4.runtime.CommonTokenStream
 import java.io.File
+import kotlin.math.abs
 
 interface Instruction
 
@@ -353,7 +354,7 @@ class XQLListener : XQLBaseListener() {
         }
         val name = context.NAME()?.text.toString()
         if (!(name == "null" || declared.contains(name))) {
-            XQLErrors.undeclaredAssign(name, context.start?.line, context.text)
+            XQLErrors.undeclaredAssign(name, context.start?.line, context.text, findClosestDeclared(name))
         }
     }
 
@@ -363,12 +364,20 @@ class XQLListener : XQLBaseListener() {
         }
         val name = context.NAME()?.text.toString()
         if (!(name == "null" || declared.contains(name))) {
-            XQLErrors.undeclaredSave(name, context.start?.line, context.text)
+            XQLErrors.undeclaredSave(name, context.start?.line, context.text, findClosestDeclared(name))
         }
         val argument = context.ARGUMENT()?.text.toString().removePrefix("$").toInt()
         if (argument > parameters) {
             XQLErrors.invalidArgument(argument, context.start?.line, context.text)
         }
+    }
+
+    fun findClosestDeclared(name: String) :String?{
+        val dec = mutableListOf<Int>()
+        for (i in declared){
+            dec.add(abs(name.compareTo(i, false)))
+        }
+        return declared[dec.indexOf(dec.min())]
     }
 
 }

@@ -19,7 +19,7 @@ class XQLErrors {
             println("$color$text$RESET")
         }
 
-        fun undeclaredAssign(name: String, line: Int?, region: String) {
+        fun undeclaredAssign(name: String, line: Int?, region: String, closest: String?) {
             colorPrint(RED, "BUILD ERROR:")
             colorPrint(RESET, " variable")
             colorPrint(GREEN, " \"$name\"")
@@ -36,10 +36,15 @@ class XQLErrors {
                         + "^".repeat(name.length)
             )
 
+            if (closest != null){
+                colorPrint(CYAN, "help:")
+                colorPrint(RESET, " did you mean")
+                colorPrint(CYAN, " $closest")
+            }
             exitProcess(1)
         }
 
-        fun undeclaredSave(name: String, line: Int?, region: String) {
+        fun undeclaredSave(name: String, line: Int?, region: String, closest: String?) {
             colorPrint(RED, "BUILD ERROR:")
             colorPrint(RESET, " variable")
             colorPrint(GREEN, " \"$name\"")
@@ -55,6 +60,11 @@ class XQLErrors {
                         + " ".repeat(region.findAnyOf(listOf(name))?.first.toString().toInt())
                         + "^".repeat(name.length)
             )
+            if (closest != null){
+                colorPrint(CYAN, "help:")
+                colorPrint(RESET, " did you mean")
+                colorPrint(CYAN, " $closest")
+            }
 
             exitProcess(1)
         }
