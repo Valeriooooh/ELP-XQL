@@ -64,11 +64,11 @@ data class XQL(val parameters: List<String>, val instructions: List<Instruction?
                 is Assign -> dict[it.name] = exec(it.query)
 
                 is Save -> {
-                    val aux = dict[it.name]
-                    when (aux) {
-                        is XMLElement.Document -> File(parameters[it.number - 1]).writeText(aux.indentToString())
-                        is XMLElement.Tag -> File(parameters[it.number - 1]).writeText(aux.indentToString(0))
-                        else -> File(parameters[it.number - 1]).writeText(aux.toString())
+                    val buffer = dict[it.name]
+                    when (buffer) {
+                        is XMLElement.Document -> File(parameters[it.number - 1]).writeText(buffer.indentToString())
+                        is XMLElement.Tag -> File(parameters[it.number - 1]).writeText(buffer.indentToString(0))
+                        else -> File(parameters[it.number - 1]).writeText(buffer.toString())
                     }
                 }
             }
@@ -80,6 +80,7 @@ data class XQL(val parameters: List<String>, val instructions: List<Instruction?
             is Query.Arrow ->
                 when (val p = exec(query.prev)) {
                     is XMLElement.ResultList -> p.map(query.query)
+
                     is XMLElement.Tag -> {
                         XQLErrors.invalidMapOperation(query)
                         null
@@ -94,6 +95,7 @@ data class XQL(val parameters: List<String>, val instructions: List<Instruction?
             is Query.Sum ->
                 when (val p = exec(query.prev)) {
                     is XMLElement.ResultList -> p.sum()
+
                     else -> {
                         XQLErrors.illegalSumOperation(query)
                         null
@@ -104,10 +106,12 @@ data class XQL(val parameters: List<String>, val instructions: List<Instruction?
                 when (val p = exec(query.prev)) {
                     is XMLElement.Tag -> p.find(query.query)
                     is XMLElement.Document -> p.find(query.query)
-                    is XMLElement.ResultList ->{
+
+                    is XMLElement.ResultList -> {
                         XQLErrors.invalidDotOperation(query)
                         null
                     }
+
                     else -> null
                 }
 
@@ -126,12 +130,13 @@ data class XQL(val parameters: List<String>, val instructions: List<Instruction?
 
             is Query.Offset ->
                 when (val p = exec(query.prev)) {
-                    is XMLElement.ResultList -> try {
-                        p.elements[query.num]
-                    } catch (_: Exception) {
-                        XQLErrors.indexOutOfBounds(query)
-                        null
-                    }
+                    is XMLElement.ResultList ->
+                        try {
+                            p.elements[query.num]
+                        } catch (_: Exception) {
+                            XQLErrors.indexOutOfBounds(query)
+                            null
+                        }
 
                     else ->
                         if (query.num == 0) {
@@ -322,13 +327,6 @@ class XQLListener : XQLBaseListener() {
 
     val declared = mutableListOf<String>()
 
-    override fun enterAssign(context: XQLParser.AssignContext?) {
-        if (context == null) {
-            return
-        }
-        declared.add(context.NAME()?.text.toString())
-    }
-
     override fun enterLoad(context: XQLParser.LoadContext?) {
         if (context == null) {
             return
@@ -336,14 +334,11 @@ class XQLListener : XQLBaseListener() {
         declared.add(context.NAME()?.text.toString())
     }
 
-    override fun enterSave(context: XQLParser.SaveContext?) {
+    override fun enterAssign(context: XQLParser.AssignContext?) {
         if (context == null) {
             return
         }
-        val name = context.NAME()?.text.toString()
-        if (!(name == "null" || declared.contains(name))) {
-            XQLErrors.undeclaredSave(name, context.start?.line, context.text)
-        }
+        declared.add(context.NAME()?.text.toString())
     }
 
     override fun enterExpression(context: XQLParser.ExpressionContext?) {
@@ -353,6 +348,16 @@ class XQLListener : XQLBaseListener() {
         val name = context.NAME()?.text.toString()
         if (!(name == "null" || declared.contains(name))) {
             XQLErrors.undeclaredAssign(name, context.start?.line, context.text)
+        }
+    }
+
+    override fun enterSave(context: XQLParser.SaveContext?) {
+        if (context == null) {
+            return
+        }
+        val name = context.NAME()?.text.toString()
+        if (!(name == "null" || declared.contains(name))) {
+            XQLErrors.undeclaredSave(name, context.start?.line, context.text)
         }
     }
 

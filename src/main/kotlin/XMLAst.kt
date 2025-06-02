@@ -129,7 +129,7 @@ sealed class XMLElement {
                     } catch (_: NumberFormatException) {
                         XQLErrors.invalidSumOperation(it.text)
                     }
-                }else{
+                } else {
                     XQLErrors.illegalSumOperation(it)
                 }
             }
@@ -182,12 +182,12 @@ fun XMLParser.DocumentContext.toAst(): XMLElement.Document {
 fun XMLParser.ElementContext.toAst(): XMLElement.Tag {
     val attributes: MutableList<XMLElement.Attribute> = mutableListOf()
     this.attribute().forEach {
-        attributes.add(XMLElement.Attribute(name = it.Name().text, value = it.STRING().text.trim('"')))
+        attributes.add(XMLElement.Attribute(it.Name().text, it.STRING().text.trim('"')))
     }
     if (this.content() == null) {
-        return XMLElement.Tag(name = this.Name()[0].text, attributes = attributes, content = listOf())
+        return XMLElement.Tag(this.Name()[0].text, attributes, listOf())
     }
-    return XMLElement.Tag(name = this.Name()[0].text, attributes = attributes, content = this.content().toAst())
+    return XMLElement.Tag(this.Name()[0].text, attributes, this.content().toAst())
 }
 
 fun XMLParser.ContentContext.toAst(): List<XMLElement> {

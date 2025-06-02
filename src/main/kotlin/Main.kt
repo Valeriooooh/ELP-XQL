@@ -14,7 +14,7 @@ fun main(args: Array<String>) {
                     "Usage:\n" +
                     "\txql <XQL file> <Input XML file> <Output XML file>"
         )
-        return;
+        return
     }
     val xql = XQLParser(
         CommonTokenStream(
@@ -22,7 +22,7 @@ fun main(args: Array<String>) {
                 CharStreams.fromString(File(args[0]).readText().trimIndent())
             )
         )
-    ).document();
+    ).document()
     ParseTreeWalker().walk(XQLListener(), xql)
     xql.toAst(listOf(args[1], args[2])).run()
 }
