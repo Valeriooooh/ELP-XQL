@@ -158,9 +158,13 @@ sealed class XMLElement {
         override fun toString(): String {
             val builder = StringBuilder()
             elements.forEach {
-                builder.append("\"$it\",")
+                if (it is Text) {
+                    builder.append("\"$it\", ")
+                } else {
+                    builder.append("$it, ")
+                }
             }
-            return "[" + builder.removeSuffix(",") + "]"
+            return "[" + builder.removeSuffix(", ") + "]"
         }
 
     }
