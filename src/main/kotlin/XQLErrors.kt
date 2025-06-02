@@ -95,7 +95,7 @@ class XQLErrors {
             exitProcess(1)
         }
 
-        fun illegalSumOperation(query: Query.Sum) {
+        fun illegalSumOperation(query: Query) {
             colorPrint(RED, "RUNTIME ERROR:")
             colorPrint(RESET, " illegal")
             colorPrint(RESET, " sum")
@@ -112,6 +112,55 @@ class XQLErrors {
                 "\t"
                         + " ".repeat(query.toString().length - digits)
                         + "^".repeat(digits)
+            )
+            exitProcess(1)
+        }
+        fun illegalSumOperation(query: XMLElement) {
+            colorPrint(RED, "RUNTIME ERROR:")
+            colorPrint(RESET, " illegal")
+            colorPrint(RESET, " sum")
+            colorPrint(RESET, " (")
+            colorPrint(CYAN, "++")
+            colorPrint(RESET, ")")
+            colorPrintln(RESET, " operation on element")
+            colorPrintln(CYAN, "│")
+            colorPrint(CYAN, "╰─>")
+            if(query is XMLElement.Tag){
+                colorPrintln(RESET, "\t${query.indentToString(0)}")
+                val digits = 2
+                colorPrintln(
+                    RED,
+                    "\t"
+                            + " ".repeat(query.toString().length - digits)
+            //                + "^".repeat(digits)
+                )
+            }
+            exitProcess(1)
+        }
+
+        fun invalidDotOperation(query: Query.Dot) {
+            colorPrint(RED, "RUNTIME ERROR:")
+            colorPrint(RESET, " invalid")
+            colorPrint(RESET, " dot")
+            colorPrint(RESET, " (")
+            colorPrint(CYAN, ".")
+            colorPrint(RESET, ")")
+            colorPrintln(RESET, " operation:")
+            colorPrintln(CYAN, "│")
+            colorPrint(CYAN, "╰─>")
+            colorPrintln(RESET, "\t${query.toString()}")
+            val digits = query.query.length
+            colorPrintln(
+                RED,
+                "\t"
+                        + " ".repeat(query.toString().length - 2 - digits)
+                        + "^".repeat(digits + 2)
+            )
+            colorPrint(CYAN, "help:")
+            colorPrintln(RESET, " operation on lists should be:")
+            colorPrintln(
+                RESET,
+                "\t${query.toString().reversed().replaceFirst(".", ">-").reversed()}"
             )
             exitProcess(1)
         }

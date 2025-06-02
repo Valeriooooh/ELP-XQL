@@ -129,6 +129,8 @@ sealed class XMLElement {
                     } catch (_: NumberFormatException) {
                         XQLErrors.invalidSumOperation(it.text)
                     }
+                }else{
+                    XQLErrors.illegalSumOperation(it)
                 }
             }
             if (sum - sum.toInt().toDouble() == 0.0) {

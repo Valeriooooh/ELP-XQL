@@ -104,6 +104,10 @@ data class XQL(val parameters: List<String>, val instructions: List<Instruction?
                 when (val p = exec(query.prev)) {
                     is XMLElement.Tag -> p.find(query.query)
                     is XMLElement.Document -> p.find(query.query)
+                    is XMLElement.ResultList ->{
+                        XQLErrors.invalidDotOperation(query)
+                        null
+                    }
                     else -> null
                 }
 
