@@ -6,7 +6,6 @@ import XQLBaseListener
 import org.antlr.v4.runtime.CharStreams
 import org.antlr.v4.runtime.CommonTokenStream
 import java.io.File
-import kotlin.math.abs
 
 interface Instruction
 
@@ -354,7 +353,7 @@ class XQLListener : XQLBaseListener() {
         }
         val name = context.NAME()?.text.toString()
         if (!(name == "null" || declared.contains(name))) {
-            XQLErrors.undeclaredAssign(name, context.start?.line, context.text, findClosestDeclared(name))
+            XQLErrors.undeclaredAssign(name, context.start?.line, context.text, match(name))
         }
     }
 
@@ -364,7 +363,7 @@ class XQLListener : XQLBaseListener() {
         }
         val name = context.NAME()?.text.toString()
         if (!(name == "null" || declared.contains(name))) {
-            XQLErrors.undeclaredSave(name, context.start?.line, context.text, findClosestDeclared(name))
+            XQLErrors.undeclaredSave(name, context.start?.line, context.text, match(name))
         }
         val argument = context.ARGUMENT()?.text.toString().removePrefix("$").toInt()
         if (argument > parameters) {
@@ -372,12 +371,31 @@ class XQLListener : XQLBaseListener() {
         }
     }
 
-    fun findClosestDeclared(name: String) :String?{
-        val dec = mutableListOf<Int>()
-        for (i in declared){
-            dec.add(abs(name.compareTo(i, false)))
+    private fun match(name: String) = declared.minByOrNull { levenshteinDistance(name, it) }
+
+    // Experimental implementation of the Levenshtein Distance algorithm.
+    fun levenshteinDistance(a: String, b: String): Int {
+        var cost = Array(a.length + 1) { it }
+        var newCost = Array(a.length + 1) { 0 }
+        for (i in 1..b.length) {
+            newCost[0] = i
+            for (j in 1..a.length) {
+                newCost[j] = minOf(
+                    cost[j] + 1,
+                    newCost[j - 1] + 1,
+                    cost[j - 1] +
+                            if (a[j - 1] == b[i - 1]) {
+                                0
+                            } else {
+                                1
+                            }
+                )
+            }
+            val swap = cost
+            cost = newCost
+            newCost = swap
         }
-        return declared[dec.indexOf(dec.min())]
+        return cost[a.length]
     }
 
 }

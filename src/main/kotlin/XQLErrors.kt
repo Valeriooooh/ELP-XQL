@@ -36,11 +36,13 @@ class XQLErrors {
                         + "^".repeat(name.length)
             )
 
-            if (closest != null){
+            if (closest != null) {
                 colorPrint(CYAN, "help:")
                 colorPrint(RESET, " did you mean")
                 colorPrint(CYAN, " $closest")
+                colorPrintln(RESET, " ?")
             }
+
             exitProcess(1)
         }
 
@@ -60,10 +62,12 @@ class XQLErrors {
                         + " ".repeat(region.findAnyOf(listOf(name))?.first.toString().toInt())
                         + "^".repeat(name.length)
             )
-            if (closest != null){
+
+            if (closest != null) {
                 colorPrint(CYAN, "help:")
                 colorPrint(RESET, " did you mean")
                 colorPrint(CYAN, " $closest")
+                colorPrintln(RESET, " ?")
             }
 
             exitProcess(1)
