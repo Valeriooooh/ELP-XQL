@@ -59,6 +59,26 @@ class XQLErrors {
             exitProcess(1)
         }
 
+        fun invalidArgument(number: Int, line: Int?, region: String) {
+            colorPrint(RED, "BUILD ERROR:")
+            colorPrint(RESET, " invalid argument")
+            colorPrint(GREEN, " \"$$number\"")
+            colorPrint(RESET, " on line")
+            colorPrintln(CYAN, " $line")
+
+            colorPrint(CYAN, "$line:")
+            colorPrintln(RESET, "\t$region")
+
+            colorPrintln(
+                RED,
+                "\t"
+                        + " ".repeat(region.findAnyOf(listOf(number.toString()))?.first.toString().toInt())
+                        + "^".repeat(number.toString().length)
+            )
+
+            exitProcess(1)
+        }
+
         fun indexOutOfBounds(query: Query.Offset) {
             colorPrint(RED, "RUNTIME ERROR:")
             colorPrintln(RESET, " index out of bounds")

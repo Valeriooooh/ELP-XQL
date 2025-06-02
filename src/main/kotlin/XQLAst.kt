@@ -324,11 +324,18 @@ fun XQLParser.CompositionContext.toAst(branch: Query): Query {
 
 class XQLListener : XQLBaseListener() {
 
+    // Maximum allowed number of arguments, minus one.
+    val parameters = 2
+
     val declared = mutableListOf<String>()
 
     override fun enterLoad(context: XQLParser.LoadContext?) {
         if (context == null) {
             return
+        }
+        val argument = context.ARGUMENT()?.text.toString().removePrefix("$").toInt()
+        if (argument > parameters) {
+            XQLErrors.invalidArgument(argument, context.start?.line, context.text)
         }
         declared.add(context.NAME()?.text.toString())
     }
@@ -357,6 +364,10 @@ class XQLListener : XQLBaseListener() {
         val name = context.NAME()?.text.toString()
         if (!(name == "null" || declared.contains(name))) {
             XQLErrors.undeclaredSave(name, context.start?.line, context.text)
+        }
+        val argument = context.ARGUMENT()?.text.toString().removePrefix("$").toInt()
+        if (argument > parameters) {
+            XQLErrors.invalidArgument(argument, context.start?.line, context.text)
         }
     }
 
